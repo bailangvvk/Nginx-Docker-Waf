@@ -76,14 +76,17 @@ RUN \
   make install && \
   strip /usr/local/nginx/sbin/nginx
 
-# 清理临时文件和不必要的依赖
-RUN \
-  apk del .build-deps && \
-  rm -rf /var/cache/apk/* && \
-  rm -f nginx.tar.gz openssl.tar.gz zlib.tar.gz brotli.tar.gz zstd.tar.gz
+# 最小运行时镜像
+FROM busybox:1.35-uclibc
+# FROM gcr.io/distroless/static
 
-# 设置 Nginx 配置路径和启动命令
-COPY nginx.conf /usr/local/nginx/conf/nginx.conf
+# 拷贝构建产物
+COPY --from=builder /usr/local/nginx /usr/local/nginx
+
+# 暴露端口
 EXPOSE 80 443
 
-CMD ["nginx", "-g", "daemon off;"]
+WORKDIR /usr/local/nginx
+
+# 启动 nginx
+CMD ["./sbin/nginx", "-g", "daemon off;"]
