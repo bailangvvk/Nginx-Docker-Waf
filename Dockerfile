@@ -72,7 +72,8 @@ RUN \
     && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
     && cd zstd-${ZSTD_VERSION} \
     && make clean \
-    && CFLAGS="-fPIC" make && make install
+    && CFLAGS="-fPIC" make && make install \
+    && cd ..
 
 # Clone Zstandard NGINX module
 RUN git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git
