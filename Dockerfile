@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 FROM alpine:3.20 AS builder
 
 # 可选手动传参，否则自动抓最新版
@@ -87,7 +85,8 @@ RUN apk add --no-cache \
     --with-ld-opt="-static" \
     --with-openssl=../openssl-* \
     --with-zlib=../zlib-* \
-    --add-dynamic-module=../ngx_brotli \
+    --with-compat \
+    # --add-dynamic-module=../ngx_brotli \
     --with-pcre \
     --with-pcre-jit \
     --with-threads \
