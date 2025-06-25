@@ -55,6 +55,7 @@ RUN \
   \
   cd nginx-${NGINX_VERSION} && \
   ./configure \
+    --prefix=/etc/nginx \
     --user=root \
     --group=root \
     --with-cc-opt="-static -static-libgcc" \
@@ -72,7 +73,7 @@ RUN \
     --with-threads && \
   make -j$(nproc) && \
   make install && \
-  strip /usr/local/nginx/sbin/nginx
+  strip /etc/nginx/sbin/nginx
 
 
 # 最小运行时镜像
@@ -80,12 +81,12 @@ FROM busybox:1.35-uclibc
 # FROM gcr.io/distroless/static
 
 # 拷贝构建产物
-COPY --from=builder /usr/local/nginx /usr/local/nginx
+COPY --from=builder /etc/nginx /etc/nginx
 
 # 暴露端口
 EXPOSE 80 443
 
-WORKDIR /usr/local/nginx
+WORKDIR /etc/nginx
 
 # 启动 nginx
 CMD ["./sbin/nginx", "-g", "daemon off;"]
