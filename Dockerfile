@@ -1,7 +1,7 @@
-# 使用基础镜像
+# 使用 Alpine 作为基础镜像构建环境
 FROM alpine:3.18 as builder
 
-# 安装依赖
+# 安装构建依赖
 RUN apk add --no-cache \
   build-base \
   curl \
@@ -9,11 +9,11 @@ RUN apk add --no-cache \
   zlib-dev \
   openssl-dev \
   git \
+  bash \
   && apk add --no-cache --virtual .build-deps \
   gcc \
   musl-dev \
-  make \
-  bash
+  make
 
 # 设置版本变量并进行处理
 RUN \
@@ -37,7 +37,6 @@ RUN \
   echo "BROTLI_VERSION=${BROTLI_VERSION}" && \
   echo "ZSTD_VERSION=${ZSTD_VERSION}" && \
   echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}"
-
 
 # 下载并解压源码包
 RUN \
@@ -78,8 +77,7 @@ RUN \
   strip /usr/local/nginx/sbin/nginx
 
 # 最小运行时镜像
-FROM busybox:1.35-uclibc
-# FROM gcr.io/distroless/static
+FROM gcr.io/distroless/static
 
 # 拷贝构建产物
 COPY --from=builder /usr/local/nginx /usr/local/nginx
