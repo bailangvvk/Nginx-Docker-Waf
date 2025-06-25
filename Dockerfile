@@ -78,7 +78,6 @@ RUN apk add --no-cache \
     --with-threads \
     --with-stream \
     --with-http_rewrite_module \
-    
     # --with-http_ssl_module \
     # --with-http_v2_module \
     # --with-http_v3_module \
