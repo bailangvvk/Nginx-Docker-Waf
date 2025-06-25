@@ -87,7 +87,7 @@ RUN apk add --no-cache \
     --with-openssl=../openssl-* \
     --with-zlib=../zlib-* \
     --with-compat \
-    # --add-dynamic-module=../ngx_brotli \
+    --with-ngx_brotli=../ngx_brotli \
     --with-pcre \
     --with-pcre-jit \
     --with-threads \
