@@ -76,43 +76,25 @@ RUN apk add --no-cache \
   #   --without-http_rewrite_module \
   #   --without-http_auth_basic_module \
   #   --with-threads && \
-  ./configure \
-  --prefix=/etc/nginx \
-  --user=root \
-  --group=root \
-  --with-cc-opt="-static -static-libgcc" \
-  --with-ld-opt="-static" \
-  --with-pcre \
-  --with-pcre-jit \
-  --with-threads \
-  --with-file-aio \
-  --with-http_ssl_module \
-  --with-http_v2_module \
-  --with-http_v3_module \
-  --with-stream \
-  --with-stream_ssl_module \
-  --with-stream_realip_module \
-  --with-stream_ssl_preread_module \
-  --with-http_gzip_static_module \
-  --with-http_stub_status_module \
-  --with-http_realip_module \
-  --with-http_addition_module \
-  --with-http_sub_module \
-  --with-http_dav_module \
-  --with-http_flv_module \
-  --with-http_mp4_module \
-  --with-http_slice_module \
-  --with-http_random_index_module \
-  --with-http_secure_link_module \
-  --with-http_degradation_module \
-  --with-http_auth_request_module \
-  --with-http_image_filter_module=static \
-  --with-http_geoip_module=static \
-  --with-mail \
-  --with-mail_ssl_module \
-  --with-openssl=../openssl-${OPENSSL_VERSION} \
-  --with-zlib=../zlib-${ZLIB_VERSION} \
-  --with-http_perl_module=dynamic && \
+./configure \
+    --prefix=/etc/nginx \
+    --user=root \
+    --group=root \
+    --with-cc-opt="-static -static-libgcc" \
+    --with-ld-opt="-static" \
+    --with-openssl=../openssl-* \
+    --with-zlib=../zlib-* \
+    --with-pcre \
+    --with-pcre-jit \
+    --with-threads \
+    --with-http_ssl_module \
+    --with-http_v2_module \
+    --with-http_gzip_static_module \
+    --with-http_stub_status_module \
+    --with-stream \
+    --with-stream_ssl_module \
+    --with-mail \
+    --with-mail_ssl_module && \
   make -j$(nproc) && \
   make install && \
   strip /etc/nginx/sbin/nginx
