@@ -23,60 +23,60 @@ RUN apk add --no-cache \
     bash
 
 # 自动抓取最新版本
-RUN NGINX_VERSION="${NGINX_VERSION:-$( \
-curl -s https://nginx.org/en/download.html | \
-grep -oP 'nginx-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
-head -n1 \
-)}"
-
-RUN OPENSSL_VERSION="${OPENSSL_VERSION:-$( \
-curl -s https://www.openssl.org/source/ | \
-grep -oP 'openssl-\K[0-9]+\.[0-9]+\.[0-9]+[a-z]?(?=\.tar\.gz)' | \
-grep -vE 'fips|alpha|beta' | \
-head -n1 \
-)}"
-
-RUN ZLIB_VERSION="${ZLIB_VERSION:-$( \
-curl -s https://zlib.net/ | \
-grep -oP 'zlib-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
-head -n1 \
-)}"
+RUN \
+  NGINX_VERSION="${NGINX_VERSION:-$( \
+    curl -s https://nginx.org/en/download.html | \
+    grep -oP 'nginx-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
+    head -n1 \
+  )}" && \
+  OPENSSL_VERSION="${OPENSSL_VERSION:-$( \
+    curl -s https://www.openssl.org/source/ | \
+    grep -oP 'openssl-\K[0-9]+\.[0-9]+\.[0-9]+[a-z]?(?=\.tar\.gz)' | \
+    grep -vE 'fips|alpha|beta' | \
+    head -n1 \
+  )}" && \
+  ZLIB_VERSION="${ZLIB_VERSION:-$( \
+    curl -s https://zlib.net/ | \
+    grep -oP 'zlib-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
+    head -n1 \
+  )}" && \
+  \
   # fallback 以防 curl/grep 失败
-RUN NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
-OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
-ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}"
-
-RUN echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
-\
-curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
-tar xzf nginx.tar.gz && \
-\
-curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
-tar xzf openssl.tar.gz && \
-\
-curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
-tar xzf zlib.tar.gz
-
-RUN cd nginx-${NGINX_VERSION} && \
-./configure \
---user=root \
---group=root \
---with-cc-opt="-static -static-libgcc" \
---with-ld-opt="-static" \
---with-openssl=../openssl-${OPENSSL_VERSION} \
---with-zlib=../zlib-${ZLIB_VERSION} \
---with-pcre \
---with-pcre-jit \
---with-http_ssl_module \
---with-http_v2_module \
---with-http_gzip_static_module \
---with-http_stub_status_module \
---without-http_rewrite_module \
---without-http_auth_basic_module \
---with-threads && \
-make -j$(nproc) && \
-make install && \
-strip /usr/local/nginx/sbin/nginx
+  NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
+  OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
+  ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
+  \
+  echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
+  \
+  curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
+  tar xzf nginx.tar.gz && \
+  \
+  curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
+  tar xzf openssl.tar.gz && \
+  \
+  curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
+  tar xzf zlib.tar.gz && \
+  \
+  cd nginx-${NGINX_VERSION} && \
+  ./configure \
+    --user=root \
+    --group=root \
+    --with-cc-opt="-static -static-libgcc" \
+    --with-ld-opt="-static" \
+    --with-openssl=../openssl-${OPENSSL_VERSION} \
+    --with-zlib=../zlib-${ZLIB_VERSION} \
+    --with-pcre \
+    --with-pcre-jit \
+    --with-http_ssl_module \
+    --with-http_v2_module \
+    --with-http_gzip_static_module \
+    --with-http_stub_status_module \
+    --without-http_rewrite_module \
+    --without-http_auth_basic_module \
+    --with-threads && \
+  make -j$(nproc) && \
+  make install && \
+  strip /usr/local/nginx/sbin/nginx
 
 
 # 最小运行时镜像
