@@ -2,10 +2,10 @@
 
 FROM alpine:3.20 AS builder
 
-# 固定使用稳定版本（zlib调整为1.2.14，最新稳定版）
+# 固定使用稳定版本
 ARG NGINX_VERSION=1.29.0
 ARG OPENSSL_VERSION=3.1.5
-ARG ZLIB_VERSION=1.2.14  # 使用最新稳定版
+ARG ZLIB_VERSION=1.2.14
 ARG BROTLI_VERSION=1.0.9
 ARG ZSTD_VERSION=1.5.5
 
@@ -37,10 +37,8 @@ RUN echo "==> 2. 下载OpenSSL源码" && \
     tar xzf openssl.tar.gz
 
 RUN echo "==> 3. 下载zlib源码（使用GitHub镜像）" && \
-    # GitHub镜像链接（确保版本存在）
     curl -fSL https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
     tar xzf zlib.tar.gz && \
-    # 重命名目录以匹配Nginx预期的结构
     mv zlib-${ZLIB_VERSION} zlib-${ZLIB_VERSION}-src
 
 RUN echo "==> 4. 获取Brotli模块" && \
@@ -67,7 +65,7 @@ RUN echo "==> 6. 编译Nginx" && \
       --with-cc-opt="-static -static-libgcc -I/usr/local/zstd/include -Wl,-Bstatic" \
       --with-ld-opt="-static -L/usr/local/zstd/lib -Wl,-Bstatic -lzstd -Wl,-Bdynamic" \
       --with-openssl=../openssl-${OPENSSL_VERSION} \
-      --with-zlib=../zlib-${ZLIB_VERSION}-src \  # 指向重命名后的zlib目录
+      --with-zlib=../zlib-${ZLIB_VERSION}-src \
       --with-pcre \
       --with-pcre-jit \
       --with-http_ssl_module \
