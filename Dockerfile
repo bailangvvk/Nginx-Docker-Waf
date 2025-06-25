@@ -87,7 +87,7 @@ RUN apk add --no-cache \
     --with-openssl=../openssl-* \
     --with-zlib=../zlib-* \
     --with-compat \
-    --with-ngx_brotli=../ngx_brotli \
+    --add-dynamic-module=../ngx_brotli \
     --with-pcre \
     --with-pcre-jit \
     --with-threads \
@@ -99,7 +99,8 @@ RUN apk add --no-cache \
     --with-stream_ssl_module \
     --with-mail \
     --with-mail_ssl_module && \
-  make -j$(nproc) && \
+  # make -j$(nproc) && \
+  make -j1 v=1 && \
   make install \
   && \
   strip /etc/nginx/sbin/nginx
