@@ -21,7 +21,8 @@ RUN apk add --no-cache \
     grep \
     tar \
     bash \
-    jq && \
+    jq 
+    git && \
   NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
   OPENSSL_VERSION=$(wget -q -O - https://www.openssl.org/source/ | grep -oE 'openssl-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
@@ -31,6 +32,8 @@ RUN apk add --no-cache \
   ZSTD_VERSION=$(curl -Ls https://github.com/facebook/zstd/releases/latest | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -c2-) \
   && \
   CORERULESET_VERSION=$(curl -s https://api.github.com/repos/coreruleset/coreruleset/releases/latest | grep -oE '"tag_name": "[^"]+' | cut -d'"' -f4 | sed 's/v//') \
+  && \
+  git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli
   && \
   \
   echo "=============版本号=============" && \
@@ -84,6 +87,7 @@ RUN apk add --no-cache \
     --with-ld-opt="-static" \
     --with-openssl=../openssl-* \
     --with-zlib=../zlib-* \
+    --add-dynamic-module=../ngx_brotli \
     --with-pcre \
     --with-pcre-jit \
     --with-threads \
@@ -106,6 +110,9 @@ FROM busybox:1.35-uclibc
 
 # 拷贝构建产物
 COPY --from=builder /etc/nginx /etc/nginx
+
+# 复制压缩模块和 ModSecurity
+COPY --from=builder /etc/nginx/objs/*.so /etc/nginx/modules/
 
 # 暴露端口
 EXPOSE 80 443
