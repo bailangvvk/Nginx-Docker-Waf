@@ -22,6 +22,20 @@ RUN apk add --no-cache \
     tar \
     bash
 
+# Clone Brotli module
+RUN git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli
+
+# Download and build Zstandard
+RUN wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
+    && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
+    && cd zstd-${ZSTD_VERSION} \
+    && make clean \
+    && CFLAGS="-fPIC" make && make install \
+    && cd ..
+
+# Clone Zstandard NGINX module
+RUN git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git
+
 # 自动抓取最新版本
 RUN \
   NGINX_VERSION="${NGINX_VERSION:-$( \
@@ -74,6 +88,8 @@ RUN \
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
     --with-threads && \
+    --add-dynamic-module=../ngx_brotli \
+    --add-dynamic-module=../zstd-nginx-module && \
   make -j$(nproc) && \
   make install && \
   strip /usr/local/nginx/sbin/nginx
@@ -85,6 +101,8 @@ FROM busybox:1.35-uclibc
 
 # 拷贝构建产物
 COPY --from=builder /usr/local/nginx /usr/local/nginx
+# 复制压缩模块
+COPY --from=builder /usr/src/nginx/objs/*.so /etc/nginx/modules/
 
 # 暴露端口
 EXPOSE 80 443
