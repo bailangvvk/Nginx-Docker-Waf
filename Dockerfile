@@ -56,7 +56,12 @@ RUN \
     head -n1 | \
     sed 's/href="\/facebook\/zstd\/releases\/tag\/v\(.*\)"/\1/' \
   )}" && \
-  \
+  echo "================检查一下版本号=========" && \
+  echo "NGINX_VERSION=${NGINX_VERSION}" && \
+  echo "OPENSSL_VERSION=${OPENSSL_VERSION}" && \
+  echo "ZLIB_VERSION=${ZLIB_VERSION}" && \
+  echo "BROTLI_VERSION=${BROTLI_VERSION}" && \
+  echo "ZSTD_VERSION=${ZSTD_VERSION}" && \
   # fallback 以防 curl/grep 失败
   NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
   OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
@@ -98,8 +103,8 @@ RUN \
     --with-http_v2_module \
     --with-http_gzip_static_module \
     --with-http_stub_status_module \
-    --with-http_brotli_module=../brotli-${BROTLI_VERSION}/c
-    --with-http_zstd_module=../zstd-${ZSTD_VERSION}/lib
+    --with-http_brotli_module=../brotli-${BROTLI_VERSION}/c \
+    --with-http_zstd_module=../zstd-${ZSTD_VERSION}/lib \
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
     --with-threads && \
