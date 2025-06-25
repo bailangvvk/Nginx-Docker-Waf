@@ -6,8 +6,8 @@ FROM alpine:3.20 AS builder
 ARG NGINX_VERSION
 ARG OPENSSL_VERSION
 ARG ZLIB_VERSION
-ARG BROTLI_VERSION=1.0.9
-ARG ZSTD_VERSION=1.5.5
+ARG BROTLI_VERSION
+ARG ZSTD_VERSION
 
 WORKDIR /build
 
@@ -24,8 +24,8 @@ RUN apk add --no-cache \
     tar \
     bash \
     git \
-    ca-certificates \
-    && update-ca-certificates
+    gcc \
+    make
 
 # 自动抓取最新版本
 RUN \
@@ -51,46 +51,35 @@ RUN \
   OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
   ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
   \
-  echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}" && \
+  echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
   \
-  # 下载Nginx
   curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
   tar xzf nginx.tar.gz && \
   \
-  # 下载OpenSSL
   curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
   tar xzf openssl.tar.gz && \
   \
-  # 下载zlib（使用备用源）
   curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
   \
-  # 下载Brotli模块
-  git clone --depth=1 -b v${BROTLI_VERSION} https://github.com/google/ngx_brotli.git ngx_brotli && \
+  # 下载并编译 Brotli 模块
+  git clone --recursive https://github.com/google/ngx_brotli.git && \
   cd ngx_brotli && \
-  git submodule update --init && \
+  git submodule update --init --recursive && \
   cd .. && \
   \
-  # 下载并编译ZSTD库
-  curl -fSL https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz -o zstd.tar.gz && \
-  tar xzf zstd.tar.gz && \
-  cd zstd-${ZSTD_VERSION} && \
-  make -j$(nproc) libzstd.a && \
-  mkdir -p /usr/local/zstd/lib /usr/local/zstd/include && \
-  cp lib/libzstd.a /usr/local/zstd/lib/ && \
-  cp -r lib/zstd.h lib/zstd_errors.h /usr/local/zstd/include/ && \
+  # 下载并编译 ZSTD 模块
+  git clone https://github.com/cloudflare/nginx-zstd.git && \
+  cd nginx-zstd && \
+  git submodule update --init --recursive && \
   cd .. && \
   \
-  # 下载ZSTD Nginx模块
-  git clone --depth=1 https://github.com/xiaokai-wang/ngx_http_zstd_module.git && \
-  \
-  # 编译Nginx（添加BR和ZSTD支持）
   cd nginx-${NGINX_VERSION} && \
   ./configure \
     --user=root \
     --group=root \
-    --with-cc-opt="-static -static-libgcc -I/usr/local/zstd/include" \
-    --with-ld-opt="-static -L/usr/local/zstd/lib -lzstd" \
+    --with-cc-opt="-static -static-libgcc" \
+    --with-ld-opt="-static" \
     --with-openssl=../openssl-${OPENSSL_VERSION} \
     --with-zlib=../zlib-${ZLIB_VERSION} \
     --with-pcre \
@@ -99,31 +88,11 @@ RUN \
     --with-http_v2_module \
     --with-http_gzip_static_module \
     --with-http_stub_status_module \
+    --with-http_brotli_module=../ngx_brotli \
+    --with-http_zstd_module=../nginx-zstd \
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
-    --with-threads \
-    --add-module=../ngx_brotli \
-    --add-module=../ngx_http_zstd_module && \
+    --with-threads && \
   make -j$(nproc) && \
   make install && \
   strip /usr/local/nginx/sbin/nginx
-
-
-# 最小运行时镜像
-FROM busybox:1.35-uclibc
-
-# 拷贝构建产物和ZSTD库
-COPY --from=builder /usr/local/nginx /usr/local/nginx
-COPY --from=builder /usr/local/zstd/lib/libzstd.a /usr/local/zstd/lib/libzstd.a
-
-# 添加默认配置（启用BR和ZSTD）
-COPY default.conf /usr/local/nginx/conf/nginx.conf
-
-# 暴露端口
-EXPOSE 80 443
-
-WORKDIR /usr/local/nginx
-
-# 启动nginx
-ENV LD_LIBRARY_PATH=/usr/local/zstd/lib
-CMD ["./sbin/nginx", "-g", "daemon off;"]
