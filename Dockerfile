@@ -3,7 +3,7 @@ ARG NGINX_VERSION ZSTD_VERSION
 
 RUN apk add --no-cache pcre-dev zlib-dev openssl-dev wget git build-base brotli-dev \
     libxml2-dev libxslt-dev curl-dev yajl-dev lmdb-dev geoip-dev lua-dev \
-    automake autoconf libtool pkgconfig linux-headers pcre2-dev
+    automake autoconf libtool pkgconfig linux-headers pcre2-dev jq
 
 WORKDIR /usr/src
 
@@ -39,9 +39,9 @@ RUN git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
 #     && cd ..
 # 自动抓取 ZSTD 最新版本
 RUN ZSTD_VERSION="${ZSTD_VERSION:-$( \
-    curl -s https://github.com/facebook/zstd/releases/latest | \
-    grep -oP 'tag/v\K[0-9]+\.[0-9]+\.[0-9]+' | \
-    head -n1 \
+    curl -s https://api.github.com/repos/facebook/zstd/releases/latest | \
+    jq -r .tag_name | \
+    sed 's/^v//' \
 )}" && \
 echo "Using ZSTD version: ${ZSTD_VERSION}" && \
 wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
