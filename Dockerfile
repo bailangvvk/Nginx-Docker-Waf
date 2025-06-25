@@ -91,7 +91,7 @@ RUN apk add --no-cache pcre-dev zlib-dev openssl-dev wget git build-base brotli-
     --with-openssl=../openssl-* \
     --with-zlib=../zlib-* \
     --with-compat \
-    --add-dynamic-module=../ngx_brotli \
+    # --add-dynamic-module=../ngx_brotli \
     --with-pcre \
     --with-pcre-jit \
     --with-threads \
