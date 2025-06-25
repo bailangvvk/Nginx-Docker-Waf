@@ -78,12 +78,14 @@ RUN \
   git submodule update --init && \
   cd .. && \
   \
-  # 获取 ZSTD 库
+  # 获取 ZSTD 库并编译
   curl -fSL https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz -o zstd.tar.gz && \
   tar xzf zstd.tar.gz && \
   cd zstd-${ZSTD_VERSION} && \
-  make -j$(nproc) libs && \
-  make install PREFIX=/usr/local/zstd && \
+  make -j$(nproc) libzstd.a && \
+  mkdir -p /usr/local/zstd/lib /usr/local/zstd/include && \
+  cp lib/libzstd.a /usr/local/zstd/lib/ && \
+  cp -r lib/zstd.h lib/zstd_errors.h /usr/local/zstd/include/ && \
   cd .. && \
   \
   cd nginx-${NGINX_VERSION} && \
@@ -91,7 +93,7 @@ RUN \
     --user=root \
     --group=root \
     --with-cc-opt="-static -static-libgcc -I/usr/local/zstd/include" \
-    --with-ld-opt="-static -L/usr/local/zstd/lib" \
+    --with-ld-opt="-static -L/usr/local/zstd/lib -lzstd" \
     --with-openssl=../openssl-${OPENSSL_VERSION} \
     --with-zlib=../zlib-${ZLIB_VERSION} \
     --with-pcre \
