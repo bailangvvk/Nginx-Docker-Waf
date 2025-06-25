@@ -3,9 +3,9 @@
 FROM alpine:3.20 AS builder
 
 # 固定使用稳定版本
-ARG NGINX_VERSION=1.25.1
+ARG NGINX_VERSION=1.29.0
 ARG OPENSSL_VERSION=3.1.5
-ARG ZLIB_VERSION=1.2.13
+ARG ZLIB_VERSION=1.2.13  # 调整为可用版本
 ARG BROTLI_VERSION=1.0.9
 ARG ZSTD_VERSION=1.5.5
 
@@ -27,7 +27,7 @@ RUN apk add --no-cache \
     ca-certificates \
     && update-ca-certificates
 
-# 分步执行构建步骤（便于定位错误）
+# 分步执行构建步骤
 RUN echo "==> 1. 下载Nginx源码" && \
     curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
     tar xzf nginx.tar.gz
@@ -37,7 +37,8 @@ RUN echo "==> 2. 下载OpenSSL源码" && \
     tar xzf openssl.tar.gz
 
 RUN echo "==> 3. 下载zlib源码" && \
-    curl -fSL https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
+    # 使用镜像站点下载zlib（原链接已失效）
+    curl -fSL https://downloads.sourceforge.net/project/libpng/zlib/${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
     tar xzf zlib.tar.gz
 
 RUN echo "==> 4. 获取Brotli模块" && \
@@ -93,6 +94,6 @@ EXPOSE 80 443
 
 WORKDIR /usr/local/nginx
 
-# 启动nginx（设置库路径）
+# 启动nginx
 ENV LD_LIBRARY_PATH=/usr/local/zstd/lib
 CMD ["./sbin/nginx", "-g", "daemon off;"]
