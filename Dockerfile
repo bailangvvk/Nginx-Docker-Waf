@@ -119,7 +119,7 @@ COPY --from=builder /usr/local/nginx /usr/local/nginx
 COPY --from=builder /usr/local/zstd/lib/libzstd.a /usr/local/zstd/lib/libzstd.a
 
 # 添加Nginx配置（启用BR和ZSTD压缩）
-COPY nginx.conf /usr/local/nginx/conf/nginx.conf
+# COPY nginx.conf /usr/local/nginx/conf/nginx.conf
 
 # 暴露端口
 EXPOSE 80 443
