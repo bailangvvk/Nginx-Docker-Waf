@@ -36,10 +36,8 @@ RUN echo "==> 2. 下载OpenSSL源码" && \
     curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
     tar xzf openssl.tar.gz
 
-RUN echo "==> 3. 下载zlib源码（使用GitHub镜像）" && \
-    curl -fSL https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
-    tar xzf zlib.tar.gz && \
-    mv zlib-${ZLIB_VERSION} zlib-${ZLIB_VERSION}-src
+RUN echo "==> 3. 下载zlib源码（使用git clone）" && \
+    git clone --depth=1 --branch v${ZLIB_VERSION} https://github.com/madler/zlib.git zlib-${ZLIB_VERSION}-src
 
 RUN echo "==> 4. 获取Brotli模块" && \
     git clone --depth=1 -b v${BROTLI_VERSION} https://github.com/google/ngx_brotli.git ngx_brotli && \
