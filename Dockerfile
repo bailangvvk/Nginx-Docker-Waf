@@ -59,29 +59,47 @@ RUN \
   ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
   BROTLI_VERSION="${BROTLI_VERSION:-1.0.9}" && \
   ZSTD_VERSION="${ZSTD_VERSION:-1.5.2}" && \
-  \
   echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}" && \
   \
+  # 下载并解压 Nginx
   curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
   tar xzf nginx.tar.gz && \
   \
+  # 检查解压后的 Nginx 文件结构
+  ls -l nginx-${NGINX_VERSION} && \
+  \
+  # 下载并解压 OpenSSL
   curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
   tar xzf openssl.tar.gz && \
   \
+  # 检查解压后的 OpenSSL 文件结构
+  ls -l openssl-${OPENSSL_VERSION} && \
+  \
+  # 下载并解压 Zlib
   curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
   \
+  # 检查解压后的 Zlib 文件结构
+  ls -l zlib-${ZLIB_VERSION} && \
+  \
+  # 下载并解压 Brotli
   curl -fSL https://github.com/google/brotli/archive/refs/tags/v${BROTLI_VERSION}.tar.gz -o brotli.tar.gz && \
   tar xzf brotli.tar.gz && \
   \
+  # 检查解压后的 Brotli 文件结构
+  ls -l brotli-${BROTLI_VERSION} && \
+  \
+  # 下载并解压 Zstd
   curl -fSL https://github.com/facebook/zstd/archive/refs/tags/v${ZSTD_VERSION}.tar.gz -o zstd.tar.gz && \
   tar xzf zstd.tar.gz && \
+  \
+  # 检查解压后的 Zstd 文件结构
+  ls -l zstd-${ZSTD_VERSION} && \
   \
   # 构建 Brotli 和 ZSTD
   cd brotli-${BROTLI_VERSION} && \
   make && \
   make install && \
-  \
   cd ../zstd-${ZSTD_VERSION} && \
   make && \
   make install && \
@@ -109,7 +127,6 @@ RUN \
   make -j$(nproc) && \
   make install && \
   strip /usr/local/nginx/sbin/nginx
-
 
 # 最小运行时镜像
 FROM busybox:1.35-uclibc
