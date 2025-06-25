@@ -1,7 +1,7 @@
-# 使用 Alpine 作为基础镜像构建环境
+# 使用基础镜像
 FROM alpine:3.18 as builder
 
-# 安装构建依赖
+# 安装依赖
 RUN apk add --no-cache \
   build-base \
   curl \
@@ -18,12 +18,16 @@ RUN apk add --no-cache \
 # 设置版本变量并进行处理
 RUN \
   echo "================检查一下版本号=========" && \
-  # 获取版本信息
-  NGINX_VERSION=$(curl -s https://nginx.org/en/download.html | grep -oP 'nginx-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | head -n1) && \
-  OPENSSL_VERSION=$(curl -s https://www.openssl.org/source/ | grep -oP 'openssl-\K[0-9]+\.[0-9]+\.[0-9]+[a-z]?(?=\.tar\.gz)' | grep -vE 'fips|alpha|beta' | head -n1) && \
-  ZLIB_VERSION=$(curl -s https://zlib.net/ | grep -oP 'zlib-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | head -n1) && \
-  BROTLI_VERSION=$(curl -s https://github.com/google/brotli/releases | grep -oP 'href="/google/brotli/releases/tag/v[0-9]+\.[0-9]+\.[0-9]+"' | head -n1 | sed 's/href="\/google\/brotli\/releases\/tag\/v\(.*\)"/\1/') && \
-  ZSTD_VERSION=$(curl -s https://github.com/facebook/zstd/releases | grep -oP 'href="/facebook/zstd/releases/tag/v[0-9]+\.[0-9]+\.[0-9]+"' | head -n1 | sed 's/href="\/facebook\/zstd\/releases\/tag\/v\(.*\)"/\1/') && \
+  # 获取 Nginx 版本
+  NGINX_VERSION=$(curl -s https://nginx.org/en/download.html | awk -F '[<>]' '/nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz/ {print $3}' | head -n1) && \
+  # 获取 OpenSSL 版本
+  OPENSSL_VERSION=$(curl -s https://www.openssl.org/source/ | awk -F '[<>]' '/openssl-[0-9]+\.[0-9]+\.[0-9]+[a-z]?\.[a-z]?\.tar\.gz/ {print $3}' | head -n1) && \
+  # 获取 Zlib 版本
+  ZLIB_VERSION=$(curl -s https://zlib.net/ | awk -F '[<>]' '/zlib-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz/ {print $3}' | head -n1) && \
+  # 获取 Brotli 版本
+  BROTLI_VERSION=$(curl -s https://github.com/google/brotli/releases | awk -F '"v' '/google\/brotli\/releases\/tag\/v[0-9]+\.[0-9]+\.[0-9]+/ {print $2}' | head -n1) && \
+  # 获取 Zstd 版本
+  ZSTD_VERSION=$(curl -s https://github.com/facebook/zstd/releases | awk -F '"v' '/facebook\/zstd\/releases\/tag\/v[0-9]+\.[0-9]+\.[0-9]+/ {print $2}' | head -n1) && \
   # 如果没有获取到版本号，则使用默认版本
   NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
   OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
@@ -77,7 +81,7 @@ RUN \
   strip /usr/local/nginx/sbin/nginx
 
 # 最小运行时镜像
-FROM gcr.io/distroless/static
+FROM busybox:1.35-uclibc
 
 # 拷贝构建产物
 COPY --from=builder /usr/local/nginx /usr/local/nginx
