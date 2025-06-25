@@ -1,66 +1,93 @@
-# 使用基础镜像
-FROM alpine:3.18 as builder
+# syntax=docker/dockerfile:1
 
-# 安装依赖
+FROM alpine:3.20 AS builder
+
+# 可选手动传参，否则自动抓最新版
+ARG NGINX_VERSION
+ARG OPENSSL_VERSION
+ARG ZLIB_VERSION
+ARG BROTLI_VERSION
+ARG ZSTD_VERSION
+
+WORKDIR /build
+
+# 安装构建依赖
 RUN apk add --no-cache \
-  build-base \
-  curl \
-  pcre-dev \
-  zlib-dev \
-  openssl-dev \
-  git \
-  bash \
-  && apk add --no-cache --virtual .build-deps \
-  gcc \
-  musl-dev \
-  make
+    build-base \
+    curl \
+    pcre-dev \
+    zlib-dev \
+    linux-headers \
+    perl \
+    sed \
+    grep \
+    tar \
+    bash \
+    git
 
-# 设置版本变量并进行处理
+# 自动抓取最新版本
 RUN \
-  echo "================检查一下版本号=========" && \
-  # 获取 Nginx 版本
-  NGINX_VERSION=$(curl -s https://nginx.org/en/download.html | awk -F '[<>]' '/nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz/ {print $3}' | head -n1) && \
-  # 获取 OpenSSL 版本
-  OPENSSL_VERSION=$(curl -s https://www.openssl.org/source/ | awk -F '[<>]' '/openssl-[0-9]+\.[0-9]+\.[0-9]+[a-z]?\.[a-z]?\.tar\.gz/ {print $3}' | head -n1) && \
-  # 获取 Zlib 版本
-  ZLIB_VERSION=$(curl -s https://zlib.net/ | awk -F '[<>]' '/zlib-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz/ {print $3}' | head -n1) && \
-  # 获取 Brotli 版本
-  BROTLI_VERSION=$(curl -s https://github.com/google/brotli/releases | awk -F '"v' '/google\/brotli\/releases\/tag\/v[0-9]+\.[0-9]+\.[0-9]+/ {print $2}' | head -n1) && \
-  # 获取 Zstd 版本
-  ZSTD_VERSION=$(curl -s https://github.com/facebook/zstd/releases | awk -F '"v' '/facebook\/zstd\/releases\/tag\/v[0-9]+\.[0-9]+\.[0-9]+/ {print $2}' | head -n1) && \
-  # 如果没有获取到版本号，则使用默认版本
+  NGINX_VERSION="${NGINX_VERSION:-$( \
+    curl -s https://nginx.org/en/download.html | \
+    grep -oP 'nginx-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
+    head -n1 \
+  )}" && \
+  OPENSSL_VERSION="${OPENSSL_VERSION:-$( \
+    curl -s https://www.openssl.org/source/ | \
+    grep -oP 'openssl-\K[0-9]+\.[0-9]+\.[0-9]+[a-z]?(?=\.tar\.gz)' | \
+    grep -vE 'fips|alpha|beta' | \
+    head -n1 \
+  )}" && \
+  ZLIB_VERSION="${ZLIB_VERSION:-$( \
+    curl -s https://zlib.net/ | \
+    grep -oP 'zlib-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
+    head -n1 \
+  )}" && \
+  BROTLI_VERSION="${BROTLI_VERSION:-$( \
+    curl -s https://github.com/google/brotli/releases | \
+    grep -oP 'v\K[0-9]+\.[0-9]+\.[0-9]+' | \
+    head -n1 \
+  )}" && \
+  ZSTD_VERSION="${ZSTD_VERSION:-$( \
+    curl -s https://github.com/facebook/zstd/releases | \
+    grep -oP 'v\K[0-9]+\.[0-9]+\.[0-9]+' | \
+    head -n1 \
+  )}" && \
+  # fallback 以防 curl/grep 失败
   NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
   OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
   ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
   BROTLI_VERSION="${BROTLI_VERSION:-1.0.9}" && \
   ZSTD_VERSION="${ZSTD_VERSION:-1.5.2}" && \
-  # 输出获取到的版本信息
-  echo "NGINX_VERSION=${NGINX_VERSION}" && \
-  echo "OPENSSL_VERSION=${OPENSSL_VERSION}" && \
-  echo "ZLIB_VERSION=${ZLIB_VERSION}" && \
-  echo "BROTLI_VERSION=${BROTLI_VERSION}" && \
-  echo "ZSTD_VERSION=${ZSTD_VERSION}" && \
-  echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}"
-
-# 下载并解压源码包
-RUN \
-  curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz || { echo "Failed to download nginx-${NGINX_VERSION}.tar.gz"; exit 1; } && \
-  tar xzf nginx.tar.gz || { echo "Failed to extract nginx-${NGINX_VERSION}.tar.gz"; exit 1; } && \
-  curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz || { echo "Failed to download openssl-${OPENSSL_VERSION}.tar.gz"; exit 1; } && \
-  tar xzf openssl.tar.gz || { echo "Failed to extract openssl-${OPENSSL_VERSION}.tar.gz"; exit 1; } && \
-  curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz || { echo "Failed to download zlib-${ZLIB_VERSION}.tar.gz"; exit 1; } && \
-  tar xzf zlib.tar.gz || { echo "Failed to extract zlib-${ZLIB_VERSION}.tar.gz"; exit 1; } && \
-  curl -fSL https://github.com/google/brotli/archive/refs/tags/v${BROTLI_VERSION}.tar.gz -o brotli.tar.gz || { echo "Failed to download brotli-${BROTLI_VERSION}.tar.gz"; exit 1; } && \
-  tar xzf brotli.tar.gz || { echo "Failed to extract brotli-${BROTLI_VERSION}.tar.gz"; exit 1; } && \
-  curl -fSL https://github.com/facebook/zstd/archive/refs/tags/v${ZSTD_VERSION}.tar.gz -o zstd.tar.gz || { echo "Failed to download zstd-${ZSTD_VERSION}.tar.gz"; exit 1; } && \
-  tar xzf zstd.tar.gz || { echo "Failed to extract zstd-${ZSTD_VERSION}.tar.gz"; exit 1; }
-
-RUN echo "NGINX_VERSION=${NGINX_VERSION}" && \
-    curl -s https://nginx.org/en/download.html | awk -F '[<>]' '/nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz/ {print $3}' | head -n1
-
-# 编译和安装 Nginx
-RUN \
-  cd nginx-${NGINX_VERSION} && \
+  \
+  echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}" && \
+  \
+  curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
+  tar xzf nginx.tar.gz && \
+  \
+  curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
+  tar xzf openssl.tar.gz && \
+  \
+  curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
+  tar xzf zlib.tar.gz && \
+  \
+  curl -fSL https://github.com/google/brotli/archive/refs/tags/v${BROTLI_VERSION}.tar.gz -o brotli.tar.gz && \
+  tar xzf brotli.tar.gz && \
+  \
+  curl -fSL https://github.com/facebook/zstd/archive/refs/tags/v${ZSTD_VERSION}.tar.gz -o zstd.tar.gz && \
+  tar xzf zstd.tar.gz && \
+  \
+  # 构建 Brotli 和 ZSTD
+  cd brotli-${BROTLI_VERSION} && \
+  make && \
+  make install && \
+  \
+  cd ../zstd-${ZSTD_VERSION} && \
+  make && \
+  make install && \
+  \
+  # 构建 Nginx
+  cd ../nginx-${NGINX_VERSION} && \
   ./configure \
     --user=root \
     --group=root \
@@ -74,8 +101,8 @@ RUN \
     --with-http_v2_module \
     --with-http_gzip_static_module \
     --with-http_stub_status_module \
-    --with-http_brotli_module=../brotli-${BROTLI_VERSION}/src \
-    --with-http_zstd_module=../zstd-${ZSTD_VERSION}/lib \
+    --with-http_brotli_module \
+    --with-http_zstd_module \
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
     --with-threads && \
@@ -83,8 +110,10 @@ RUN \
   make install && \
   strip /usr/local/nginx/sbin/nginx
 
+
 # 最小运行时镜像
 FROM busybox:1.35-uclibc
+# FROM gcr.io/distroless/static
 
 # 拷贝构建产物
 COPY --from=builder /usr/local/nginx /usr/local/nginx
