@@ -110,8 +110,7 @@ RUN apk add --no-cache \
     --with-mail \
     --with-mail_ssl_module \
     --with-libatomic \
-    --with-stream_realip_module \
-    && \
+    --with-stream_realip_module && \
   make -j$(nproc) && \
   make install && \
   strip /etc/nginx/sbin/nginx
