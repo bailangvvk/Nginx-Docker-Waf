@@ -2,16 +2,16 @@
 
 FROM alpine:3.20 AS builder
 
-# 固定使用稳定版本
+# 固定使用稳定版本（zlib改用1.2.14）
 ARG NGINX_VERSION=1.29.0
 ARG OPENSSL_VERSION=3.1.5
-ARG ZLIB_VERSION=1.2.13
+ARG ZLIB_VERSION=1.2.14
 ARG BROTLI_VERSION=1.0.9
 ARG ZSTD_VERSION=1.5.5
 
 WORKDIR /build
 
-# 安装构建依赖和证书支持
+# 安装构建依赖
 RUN apk add --no-cache \
     build-base \
     curl \
@@ -27,6 +27,7 @@ RUN apk add --no-cache \
     ca-certificates \
     && update-ca-certificates
 
+# 手动添加本地源码（或使用可靠镜像源）
 RUN \
   echo "==> Using fixed versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}" && \
   \
@@ -38,10 +39,9 @@ RUN \
   curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
   tar xzf openssl.tar.gz && \
   \
-  # 下载zlib（多重fallback策略）
+  # 下载zlib-1.2.14（使用可靠镜像源）
   curl -fSL https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz || \
   curl -fSL https://mirrors.aliyun.com/zlib/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz || \
-  curl -fSL https://downloads.sourceforge.net/project/libpng/zlib/${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz || \
   curl -fSL https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
   mv zlib-${ZLIB_VERSION} zlib-${ZLIB_VERSION}-src && \
