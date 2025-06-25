@@ -26,17 +26,6 @@ RUN apk add --no-cache \
 # Clone Brotli module
 RUN git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli
 
-# Download and build Zstandard
-RUN wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
-    && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
-    && cd zstd-${ZSTD_VERSION} \
-    && make clean \
-    && CFLAGS="-fPIC" make && make install \
-    && cd ..
-
-# Clone Zstandard NGINX module
-RUN git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git
-
 # 自动抓取最新版本
 RUN \
   NGINX_VERSION="${NGINX_VERSION:-$( \
@@ -55,11 +44,17 @@ RUN \
     grep -oP 'zlib-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
     head -n1 \
   )}" && \
+  ZSTD_VERSION="${ZSTD_VERSION:-$( \
+    curl -s https://github.com/facebook/zstd/releases/latest | \
+    grep -oP 'tag/v\K[0-9]+\.[0-9]+\.[0-9]+' | \
+    head -n1 \
+  )}" && \
   \
   # fallback 以防 curl/grep 失败
   NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
   OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
   ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
+  ZSTD_VERSION="${ZSTD_VERSION:-1.5.0}" && \
   \
   echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
   \
@@ -72,6 +67,16 @@ RUN \
   curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
   \
+  # Download and build Zstandard
+  wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
+    && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
+    && cd zstd-${ZSTD_VERSION} \
+    && make clean \
+    && CFLAGS="-fPIC" make && make install \
+    && cd ..
+
+# Clone Zstandard NGINX module
+RUN git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git
   cd nginx-${NGINX_VERSION} && \
   ./configure \
     --user=root \
