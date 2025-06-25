@@ -98,8 +98,8 @@ RUN \
     --with-http_v2_module \
     --with-http_gzip_static_module \
     --with-http_stub_status_module \
-    --with-http_brotli_module=../brotli-${BROTLI_VERSION}/c \
-    --with-http_zstd_module=../zstd-${ZSTD_VERSION} \
+    --with-http_brotli_module=../brotli-${BROTLI_VERSION}/c
+    --with-http_zstd_module=../zstd-${ZSTD_VERSION}/lib
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
     --with-threads && \
