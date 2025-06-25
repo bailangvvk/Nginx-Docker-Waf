@@ -20,26 +20,17 @@ RUN apk add --no-cache \
     sed \
     grep \
     tar \
-    bash
+    bash \
+    jq
 
 # 自动抓取最新版本
 RUN \
-  NGINX_VERSION="${NGINX_VERSION:-$( \
-    curl -s https://nginx.org/en/download.html | \
-    grep -oP 'nginx-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
-    head -n1 \
-  )}" && \
-  OPENSSL_VERSION="${OPENSSL_VERSION:-$( \
-    curl -s https://www.openssl.org/source/ | \
-    grep -oP 'openssl-\K[0-9]+\.[0-9]+\.[0-9]+[a-z]?(?=\.tar\.gz)' | \
-    grep -vE 'fips|alpha|beta' | \
-    head -n1 \
-  )}" && \
-  ZLIB_VERSION="${ZLIB_VERSION:-$( \
-    curl -s https://zlib.net/ | \
-    grep -oP 'zlib-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
-    head -n1 \
-  )}" && \
+  NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
+  && \
+  OPENSSL_VERSION=$(wget -q -O - https://www.openssl.org/source/ | grep -oE 'openssl-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
+  && \
+  ZLIB_VERSION=$(wget -q -O - https://zlib.net/ | grep -oE 'zlib-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
+  && \
   \
   echo "=============版本号=============" && \
   echo "NGINX_VERSION=${NGINX_VERSION}" && \
