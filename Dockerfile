@@ -13,6 +13,7 @@ WORKDIR /build
 RUN apk add --no-cache \
     build-base \
     curl \
+    git \
     pcre-dev \
     zlib-dev \
     linux-headers \
@@ -20,8 +21,7 @@ RUN apk add --no-cache \
     sed \
     grep \
     tar \
-    bash \
-    git
+    bash
 
 # Clone Brotli module
 RUN git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli
@@ -67,16 +67,15 @@ RUN \
   curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
   \
-  # Download and build Zstandard
+  # 下载并构建 Zstandard
   wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
     && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
     && cd zstd-${ZSTD_VERSION} \
     && make clean \
     && CFLAGS="-fPIC" make && make install \
-    && cd ..
-
-# Clone Zstandard NGINX module
-RUN git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git
+    && cd .. && \
+  \
+  # 下载并编译 Nginx
   cd nginx-${NGINX_VERSION} && \
   ./configure \
     --user=root \
