@@ -2,10 +2,10 @@
 
 FROM alpine:3.20 AS builder
 
-# 固定使用稳定版本（zlib使用tag而非分支）
+# 固定使用稳定版本
 ARG NGINX_VERSION=1.29.0
 ARG OPENSSL_VERSION=3.1.5
-ARG ZLIB_VERSION=1.2.14
+ARG ZLIB_VERSION=1.2.13  # 切换回1.2.13版本，确保镜像可用
 ARG BROTLI_VERSION=1.0.9
 ARG ZSTD_VERSION=1.5.5
 
@@ -36,9 +36,9 @@ RUN echo "==> 2. 下载OpenSSL源码" && \
     curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
     tar xzf openssl.tar.gz
 
-RUN echo "==> 3. 下载zlib源码（使用git archive获取tag）" && \
-    # 使用git archive直接下载tag的压缩包
-    curl -fSL https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
+RUN echo "==> 3. 下载zlib源码（使用国内镜像）" && \
+    # 阿里云镜像站（稳定可用）
+    curl -fSL https://mirrors.aliyun.com/github-release/madler/zlib/v${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
     tar xzf zlib.tar.gz && \
     mv zlib-${ZLIB_VERSION} zlib-${ZLIB_VERSION}-src
 
