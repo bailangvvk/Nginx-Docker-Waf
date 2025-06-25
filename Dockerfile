@@ -8,23 +8,19 @@ ARG ZLIB_VERSION
 WORKDIR /build
 
 # 安装构建依赖
-# RUN apk add --no-cache \
-#     build-base \
-#     curl \
-#     pcre-dev \
-#     zlib-dev \
-#     linux-headers \
-#     perl \
-#     sed \
-#     grep \
-#     tar \
-#     bash \
-#     jq \
-#     git \
-#     && \
-RUN apk add --no-cache pcre-dev zlib-dev openssl-dev wget git build-base brotli-dev \
-    libxml2-dev libxslt-dev curl-dev yajl-dev lmdb-dev geoip-dev lua-dev \
-    automake autoconf libtool pkgconfig linux-headers pcre2-dev \
+RUN apk add --no-cache \
+    build-base \
+    curl \
+    pcre-dev \
+    zlib-dev \
+    linux-headers \
+    perl \
+    sed \
+    grep \
+    tar \
+    bash \
+    jq \
+    git \
     && \
   NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
