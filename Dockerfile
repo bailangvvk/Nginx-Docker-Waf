@@ -67,15 +67,15 @@ RUN apk add --no-cache \
     --with-ld-opt="-static" \
     --with-openssl=../openssl-${OPENSSL_VERSION} \
     --with-zlib=../zlib-${ZLIB_VERSION} \
-    --with-pcre \
-    --with-pcre-jit \
-    --with-http_ssl_module \
-    --with-http_v2_module \
-    --with-http_gzip_static_module \
-    --with-http_stub_status_module \
-    --without-http_rewrite_module \
-    --without-http_auth_basic_module \
-    --with-threads \
+    # --with-pcre \
+    # --with-pcre-jit \
+    # --with-http_ssl_module \
+    # --with-http_v2_module \
+    # --with-http_gzip_static_module \
+    # --with-http_stub_status_module \
+    # --without-http_rewrite_module \
+    # --without-http_auth_basic_module \
+    # --with-threads \
     && \
   make -j$(nproc) && \
   make install && \
