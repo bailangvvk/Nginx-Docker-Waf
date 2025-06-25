@@ -2,12 +2,12 @@
 
 FROM alpine:3.20 AS builder
 
-# 可选手动传参，否则自动抓最新版
-ARG NGINX_VERSION
-ARG OPENSSL_VERSION
-ARG ZLIB_VERSION
-ARG BROTLI_VERSION
-ARG ZSTD_VERSION
+# 可选手动传参，否则使用固定版本
+ARG NGINX_VERSION=1.25.1
+ARG OPENSSL_VERSION=3.1.5
+ARG ZLIB_VERSION=1.2.13
+ARG BROTLI_VERSION=1.0.9
+ARG ZSTD_VERSION=1.5.5
 
 WORKDIR /build
 
@@ -23,62 +23,38 @@ RUN apk add --no-cache \
     grep \
     tar \
     bash \
-    git
+    git \
+    ca-certificates
 
-# 自动抓取最新版本
+# 明确使用固定版本（避免网络请求失败）
 RUN \
-  NGINX_VERSION="${NGINX_VERSION:-$( \
-    curl -s https://nginx.org/en/download.html | \
-    grep -oP 'nginx-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
-    head -n1 \
-  )}" && \
-  OPENSSL_VERSION="${OPENSSL_VERSION:-$( \
-    curl -s https://www.openssl.org/source/ | \
-    grep -oP 'openssl-\K[0-9]+\.[0-9]+\.[0-9]+[a-z]?(?=\.tar\.gz)' | \
-    grep -vE 'fips|alpha|beta' | \
-    head -n1 \
-  )}" && \
-  ZLIB_VERSION="${ZLIB_VERSION:-$( \
-    curl -s https://zlib.net/ | \
-    grep -oP 'zlib-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
-    head -n1 \
-  )}" && \
-  BROTLI_VERSION="${BROTLI_VERSION:-$( \
-    curl -s https://api.github.com/repos/google/ngx_brotli/releases/latest | \
-    grep -oP '"tag_name": "\Kv?[0-9]+\.[0-9]+\.[0-9]+(?=")' | \
-    head -n1 \
-  )}" && \
-  ZSTD_VERSION="${ZSTD_VERSION:-$( \
-    curl -s https://api.github.com/repos/facebook/zstd/releases/latest | \
-    grep -oP '"tag_name": "\Kv?[0-9]+\.[0-9]+\.[0-9]+(?=")' | \
-    head -n1 \
-  )}" && \
+  NGINX_VERSION="${NGINX_VERSION}" && \
+  OPENSSL_VERSION="${OPENSSL_VERSION}" && \
+  ZLIB_VERSION="${ZLIB_VERSION}" && \
+  BROTLI_VERSION="${BROTLI_VERSION}" && \
+  ZSTD_VERSION="${ZSTD_VERSION}" && \
   \
-  # fallback 以防 curl/grep 失败
-  NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
-  OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
-  ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
-  BROTLI_VERSION="${BROTLI_VERSION:-1.0.0}" && \
-  ZSTD_VERSION="${ZSTD_VERSION:-1.6.5}" && \
+  echo "==> Using fixed versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}" && \
   \
-  echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}" && \
-  \
+  # 下载Nginx源码（使用固定URL避免版本解析问题）
   curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
   tar xzf nginx.tar.gz && \
   \
+  # 下载OpenSSL源码
   curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
   tar xzf openssl.tar.gz && \
   \
-  curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
+  # 下载zlib源码
+  curl -fSL https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
   \
-  # 获取 Brotli 模块
-  git clone --depth=1 https://github.com/google/ngx_brotli.git ngx_brotli && \
+  # 获取Brotli模块（使用固定版本URL）
+  git clone --depth=1 -b v${BROTLI_VERSION} https://github.com/google/ngx_brotli.git ngx_brotli && \
   cd ngx_brotli && \
   git submodule update --init && \
   cd .. && \
   \
-  # 获取 ZSTD 库并编译
+  # 下载并编译ZSTD库
   curl -fSL https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz -o zstd.tar.gz && \
   tar xzf zstd.tar.gz && \
   cd zstd-${ZSTD_VERSION} && \
@@ -88,6 +64,7 @@ RUN \
   cp -r lib/zstd.h lib/zstd_errors.h /usr/local/zstd/include/ && \
   cd .. && \
   \
+  # 编译Nginx
   cd nginx-${NGINX_VERSION} && \
   ./configure \
     --user=root \
@@ -114,7 +91,6 @@ RUN \
 
 # 最小运行时镜像
 FROM busybox:1.35-uclibc
-# FROM gcr.io/distroless/static
 
 # 拷贝构建产物
 COPY --from=builder /usr/local/nginx /usr/local/nginx
@@ -125,5 +101,5 @@ EXPOSE 80 443
 
 WORKDIR /usr/local/nginx
 
-# 启动 nginx
+# 启动nginx
 CMD ["./sbin/nginx", "-g", "daemon off;"]
