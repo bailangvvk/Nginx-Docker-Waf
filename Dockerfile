@@ -31,12 +31,25 @@ RUN git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
     && cd ..
 
 # Download and build Zstandard
-RUN wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
-    && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
-    && cd zstd-${ZSTD_VERSION} \
-    && make clean \
-    && CFLAGS="-fPIC" make && make install \
-    && cd ..
+# RUN wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
+#     && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
+#     && cd zstd-${ZSTD_VERSION} \
+#     && make clean \
+#     && CFLAGS="-fPIC" make && make install \
+#     && cd ..
+# 自动抓取 ZSTD 最新版本
+RUN ZSTD_VERSION="${ZSTD_VERSION:-$( \
+    curl -s https://github.com/facebook/zstd/releases/latest | \
+    grep -oP 'tag/v\K[0-9]+\.[0-9]+\.[0-9]+' | \
+    head -n1 \
+)}" && \
+echo "Using ZSTD version: ${ZSTD_VERSION}" && \
+wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
+  && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
+  && cd zstd-${ZSTD_VERSION} \
+  && make clean \
+  && CFLAGS="-fPIC" make && make install \
+  && cd ..
 
 # Clone Zstandard NGINX module
 RUN git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git
