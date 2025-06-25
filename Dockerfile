@@ -102,7 +102,8 @@ RUN apk add --no-cache \
     --with-http_stub_status_module \
     --with-http_perl_module \
     --with-http_sub_module \
-    --with-pcre --with-pcre-jit \
+    --with-pcre \
+    --with-pcre-jit \
     --with-debug \
     --with-stream \
     --with-stream_ssl_module \ 
