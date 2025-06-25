@@ -55,6 +55,9 @@ RUN \
   curl -fSL https://github.com/facebook/zstd/archive/refs/tags/v${ZSTD_VERSION}.tar.gz -o zstd.tar.gz || { echo "Failed to download zstd-${ZSTD_VERSION}.tar.gz"; exit 1; } && \
   tar xzf zstd.tar.gz || { echo "Failed to extract zstd-${ZSTD_VERSION}.tar.gz"; exit 1; }
 
+RUN echo "NGINX_VERSION=${NGINX_VERSION}" && \
+    curl -s https://nginx.org/en/download.html | awk -F '[<>]' '/nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz/ {print $3}' | head -n1
+
 # 编译和安装 Nginx
 RUN \
   cd nginx-${NGINX_VERSION} && \
