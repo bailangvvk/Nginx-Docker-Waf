@@ -1,5 +1,5 @@
 # 使用基础镜像
-FROM alpine:3.18
+FROM alpine:3.18 as builder
 
 # 安装依赖
 RUN apk add --no-cache \
