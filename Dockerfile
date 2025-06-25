@@ -20,7 +20,8 @@ RUN apk add --no-cache \
     sed \
     grep \
     tar \
-    bash
+    bash \
+    git
 
 # Clone Brotli module
 RUN git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli
