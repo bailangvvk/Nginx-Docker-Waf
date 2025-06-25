@@ -1,3 +1,5 @@
+FROM alpine:3.20 AS builder
+
 # 安装构建工具
 RUN apk add --no-cache \
     build-base \
