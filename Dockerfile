@@ -42,8 +42,8 @@ RUN \
   )}" && \
   \
   echo "NGINX_VERSION=${NGINX_VERSION}" && \
-  echo "NGINX_VERSION=${OPENSSL_VERSION}" && \
-  echo "NGINX_VERSION=${ZLIB_VERSION}" && \
+  echo "OPENSSL_VERSION=${OPENSSL_VERSION}" && \
+  echo "ZLIB_VERSION=${ZLIB_VERSION}" && \
   \
   # fallback 以防 curl/grep 失败
   NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
