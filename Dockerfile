@@ -75,7 +75,8 @@ RUN apk add --no-cache \
     # --with-http_stub_status_module \
     # --without-http_rewrite_module \
     # --without-http_auth_basic_module \
-    # --with-threads && \
+    # --with-threads 
+    && \
   make -j$(nproc) && \
   make install && \
   strip /etc/nginx/sbin/nginx
