@@ -111,7 +111,7 @@ FROM busybox:1.35-uclibc
 COPY --from=builder /etc/nginx /etc/nginx
 
 # 复制压缩模块和 ModSecurity
-COPY --from=builder /etc/nginx/objs/*.so /etc/nginx/modules/
+# COPY --from=builder /etc/nginx/objs/*.so /etc/nginx/modules/
 
 # 暴露端口
 EXPOSE 80 443
