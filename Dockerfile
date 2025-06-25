@@ -32,8 +32,8 @@ RUN git clone --recursive https://github.com/google/ngx_brotli.git && \
     cd ..
 
 # 下载并编译 ZSTD 模块
-RUN git clone https://github.com/cloudflare/nginx-zstd.git && \
-    cd nginx-zstd && \
+RUN git clone https://github.com/vozlt/nginx-module-zstd.git && \
+    cd nginx-module-zstd && \
     git submodule update --init --recursive && \
     cd ..
 
@@ -87,7 +87,7 @@ RUN \
     --with-http_gzip_static_module \
     --with-http_stub_status_module \
     --with-http_brotli_module=../ngx_brotli \
-    --with-http_zstd_module=../nginx-zstd \
+    --with-http_zstd_module=../nginx-module-zstd \
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
     --with-threads && \
