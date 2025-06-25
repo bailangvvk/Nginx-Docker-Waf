@@ -19,24 +19,25 @@ RUN apk add --no-cache \
 RUN \
   echo "================检查一下版本号=========" && \
   # 获取版本信息
-  NGINX_VERSION="${NGINX_VERSION:-$(curl -s https://nginx.org/en/download.html | grep -oP 'nginx-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | head -n1)}" && \
-  OPENSSL_VERSION="${OPENSSL_VERSION:-$(curl -s https://www.openssl.org/source/ | grep -oP 'openssl-\K[0-9]+\.[0-9]+\.[0-9]+[a-z]?(?=\.tar\.gz)' | grep -vE 'fips|alpha|beta' | head -n1)}" && \
-  ZLIB_VERSION="${ZLIB_VERSION:-$(curl -s https://zlib.net/ | grep -oP 'zlib-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | head -n1)}" && \
-  BROTLI_VERSION="${BROTLI_VERSION:-$(curl -s https://github.com/google/brotli/releases | grep -oP 'href="/google/brotli/releases/tag/v[0-9]+\.[0-9]+\.[0-9]+"' | head -n1 | sed 's/href="\/google\/brotli\/releases\/tag\/v\(.*\)"/\1/')" && \
-  ZSTD_VERSION="${ZSTD_VERSION:-$(curl -s https://github.com/facebook/zstd/releases | grep -oP 'href="/facebook/zstd/releases/tag/v[0-9]+\.[0-9]+\.[0-9]+"' | head -n1 | sed 's/href="\/facebook\/zstd\/releases\/tag\/v\(.*\)"/\1/')}" && \
+  NGINX_VERSION=$(curl -s https://nginx.org/en/download.html | grep -oP 'nginx-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | head -n1) && \
+  OPENSSL_VERSION=$(curl -s https://www.openssl.org/source/ | grep -oP 'openssl-\K[0-9]+\.[0-9]+\.[0-9]+[a-z]?(?=\.tar\.gz)' | grep -vE 'fips|alpha|beta' | head -n1) && \
+  ZLIB_VERSION=$(curl -s https://zlib.net/ | grep -oP 'zlib-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | head -n1) && \
+  BROTLI_VERSION=$(curl -s https://github.com/google/brotli/releases | grep -oP 'href="/google/brotli/releases/tag/v[0-9]+\.[0-9]+\.[0-9]+"' | head -n1 | sed 's/href="\/google\/brotli\/releases\/tag\/v\(.*\)"/\1/') && \
+  ZSTD_VERSION=$(curl -s https://github.com/facebook/zstd/releases | grep -oP 'href="/facebook/zstd/releases/tag/v[0-9]+\.[0-9]+\.[0-9]+"' | head -n1 | sed 's/href="\/facebook\/zstd\/releases\/tag\/v\(.*\)"/\1/') && \
+  # 如果没有获取到版本号，则使用默认版本
+  NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
+  OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
+  ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
+  BROTLI_VERSION="${BROTLI_VERSION:-1.0.9}" && \
+  ZSTD_VERSION="${ZSTD_VERSION:-1.5.2}" && \
   # 输出获取到的版本信息
   echo "NGINX_VERSION=${NGINX_VERSION}" && \
   echo "OPENSSL_VERSION=${OPENSSL_VERSION}" && \
   echo "ZLIB_VERSION=${ZLIB_VERSION}" && \
   echo "BROTLI_VERSION=${BROTLI_VERSION}" && \
   echo "ZSTD_VERSION=${ZSTD_VERSION}" && \
-  # 备用版本防止获取失败
-  NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
-  OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
-  ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
-  BROTLI_VERSION="${BROTLI_VERSION:-1.0.9}" && \
-  ZSTD_VERSION="${ZSTD_VERSION:-1.5.2}" && \
   echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}"
+
 
 # 下载并解压源码包
 RUN \
