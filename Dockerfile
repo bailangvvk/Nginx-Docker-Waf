@@ -2,7 +2,7 @@
 
 FROM alpine:3.20 AS builder
 
-# 固定使用稳定版本（避免网络解析问题）
+# 固定使用稳定版本
 ARG NGINX_VERSION=1.29.0
 ARG OPENSSL_VERSION=3.1.5
 ARG ZLIB_VERSION=1.2.13
@@ -30,7 +30,7 @@ RUN apk add --no-cache \
 RUN \
   echo "==> Using fixed versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}" && \
   \
-  # 下载Nginx（固定版本）
+  # 下载Nginx
   curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
   tar xzf nginx.tar.gz && \
   \
@@ -38,12 +38,15 @@ RUN \
   curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
   tar xzf openssl.tar.gz && \
   \
-  # 下载zlib（使用备用源）
+  # 下载zlib（多重fallback策略）
   curl -fSL https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz || \
-  curl -fSL https://mirrors.aliyun.com/zlib/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
+  curl -fSL https://mirrors.aliyun.com/zlib/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz || \
+  curl -fSL https://downloads.sourceforge.net/project/libpng/zlib/${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz || \
+  curl -fSL https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
+  mv zlib-${ZLIB_VERSION} zlib-${ZLIB_VERSION}-src && \
   \
-  # 克隆Brotli模块（固定版本）
+  # 克隆Brotli模块
   git clone --depth=1 -b v${BROTLI_VERSION} https://github.com/google/ngx_brotli.git ngx_brotli && \
   cd ngx_brotli && \
   git submodule update --init && \
@@ -59,7 +62,7 @@ RUN \
   cp -r lib/zstd.h lib/zstd_errors.h /usr/local/zstd/include/ && \
   cd .. && \
   \
-  # 编译Nginx（添加压缩支持）
+  # 编译Nginx
   cd nginx-${NGINX_VERSION} && \
   ./configure \
     --user=root \
@@ -67,7 +70,7 @@ RUN \
     --with-cc-opt="-static -static-libgcc -I/usr/local/zstd/include" \
     --with-ld-opt="-static -L/usr/local/zstd/lib -lzstd" \
     --with-openssl=../openssl-${OPENSSL_VERSION} \
-    --with-zlib=../zlib-${ZLIB_VERSION} \
+    --with-zlib=../zlib-${ZLIB_VERSION}-src \
     --with-pcre \
     --with-pcre-jit \
     --with-http_ssl_module \
@@ -96,6 +99,6 @@ EXPOSE 80 443
 
 WORKDIR /usr/local/nginx
 
-# 启动nginx（设置库路径）
+# 启动nginx
 ENV LD_LIBRARY_PATH=/usr/local/zstd/lib
 CMD ["./sbin/nginx", "-g", "daemon off;"]
