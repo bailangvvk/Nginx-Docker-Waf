@@ -41,6 +41,7 @@ RUN \
     head -n1 \
   )}" && \
   \
+  echo "=============版本号=============" && \
   echo "NGINX_VERSION=${NGINX_VERSION}" && \
   echo "OPENSSL_VERSION=${OPENSSL_VERSION}" && \
   echo "ZLIB_VERSION=${ZLIB_VERSION}" && \
