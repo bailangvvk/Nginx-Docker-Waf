@@ -21,7 +21,7 @@ RUN apk add --no-cache \
     grep \
     tar \
     bash \
-    jq 
+    jq \
     git && \
   NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
