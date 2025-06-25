@@ -6,6 +6,8 @@ FROM alpine:3.20 AS builder
 ARG NGINX_VERSION
 ARG OPENSSL_VERSION
 ARG ZLIB_VERSION
+ARG BROTLI_VERSION
+ARG ZSTD_VERSION
 
 WORKDIR /build
 
@@ -20,7 +22,9 @@ RUN apk add --no-cache \
     sed \
     grep \
     tar \
-    bash
+    bash \
+    zstd-dev \
+    brotli-dev
 
 # 自动抓取最新版本
 RUN \
@@ -40,14 +44,29 @@ RUN \
     grep -oP 'zlib-\K[0-9]+\.[0-9]+\.[0-9]+(?=\.tar\.gz)' | \
     head -n1 \
   )}" && \
+  BROTLI_VERSION="${BROTLI_VERSION:-$( \
+    curl -s https://github.com/google/brotli/releases | \
+    grep -oP 'href="/google/brotli/releases/tag/v[0-9]+\.[0-9]+\.[0-9]+"' | \
+    head -n1 | \
+    sed 's/href="\/google\/brotli\/releases\/tag\/v\(.*\)"/\1/' \
+  )}" && \
+  ZSTD_VERSION="${ZSTD_VERSION:-$( \
+    curl -s https://github.com/facebook/zstd/releases | \
+    grep -oP 'href="/facebook/zstd/releases/tag/v[0-9]+\.[0-9]+\.[0-9]+"' | \
+    head -n1 | \
+    sed 's/href="\/facebook\/zstd\/releases\/tag\/v\(.*\)"/\1/' \
+  )}" && \
   \
   # fallback 以防 curl/grep 失败
   NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
   OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
   ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
+  BROTLI_VERSION="${BROTLI_VERSION:-1.0.9}" && \
+  ZSTD_VERSION="${ZSTD_VERSION:-1.5.2}" && \
   \
-  echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
+  echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}, brotli-${BROTLI_VERSION}, zstd-${ZSTD_VERSION}" && \
   \
+  # 下载并解压 Nginx、OpenSSL 和 Zlib
   curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
   tar xzf nginx.tar.gz && \
   \
@@ -57,6 +76,14 @@ RUN \
   curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
   \
+  # 下载并解压 Brotli 和 Zstd
+  curl -fSL https://github.com/google/brotli/archive/refs/tags/v${BROTLI_VERSION}.tar.gz -o brotli.tar.gz && \
+  tar xzf brotli.tar.gz && \
+  \
+  curl -fSL https://github.com/facebook/zstd/archive/refs/tags/v${ZSTD_VERSION}.tar.gz -o zstd.tar.gz && \
+  tar xzf zstd.tar.gz && \
+  \
+  # 编译 Nginx，添加 Brotli 和 Zstd 支持
   cd nginx-${NGINX_VERSION} && \
   ./configure \
     --user=root \
@@ -71,6 +98,8 @@ RUN \
     --with-http_v2_module \
     --with-http_gzip_static_module \
     --with-http_stub_status_module \
+    --with-http_brotli_module=../brotli-${BROTLI_VERSION}/c \
+    --with-http_zstd_module=../zstd-${ZSTD_VERSION} \
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
     --with-threads && \
