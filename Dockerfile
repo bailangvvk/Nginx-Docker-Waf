@@ -112,10 +112,7 @@ RUN set -x && apk add --no-cache \
   --add-dynamic-module=../ModSecurity-nginx \
   # --add-dynamic-module=../zstd-nginx-module \
   && \
-  make modules && \
-
-  cd .. && mv nginx-${NGINX_VERSION} nginx
-
+  make modules
 
 # ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
 FROM alpine:3.20 AS runtime
@@ -130,7 +127,7 @@ RUN apk add --no-cache \
     yajl-dev
 
 # 拷贝构建产物
-COPY --from=builder /usr/src/nginx/objs/*.so /etc/nginx/modules/
+COPY --from=builder /usr/src/nginx-1.29.0/objs/*.so /etc/nginx/modules/
 COPY --from=builder /usr/local/modsecurity/lib/* /usr/lib/
 
 # 环境变量指定动态库搜索路径
