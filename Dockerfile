@@ -65,17 +65,18 @@ RUN apk add --no-cache \
   #   make install \
   # && \
 
-  git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity \
-  cd ModSecurity \
-  git submodule init \
-  git submodule update \
-  ./build.sh \
-  ./configure --prefix=/opt/modsecurity \
-  make -j$(nproc) \
-  make install \
+  git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity && \
+  cd ModSecurity && \
+  git submodule init && \
+  git submodule update && \
+  ./build.sh && \
+  ./configure --prefix=/opt/modsecurity && \
+  make -j$(nproc) && \
+  make install && \
+  cd ..
 
   && \
-  git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
+  git clone https://github.com/owasp-modsecurity/ModSecurity-nginx && \
 
   && \
   \
