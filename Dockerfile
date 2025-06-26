@@ -37,7 +37,8 @@ RUN apk add --no-cache \
     grep \
     make \
     g++ \
-    wget
+    wget \
+    && \
   NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
   OPENSSL_VERSION=$(wget -q -O - https://www.openssl.org/source/ | grep -oE 'openssl-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
@@ -66,13 +67,13 @@ RUN apk add --no-cache \
   echo "ZLIB_VERSION=${ZLIB_VERSION}" && \
   echo "ZSTD_VERSION=${ZSTD_VERSION}" && \
   echo "CORERULESET_VERSION=${CORERULESET_VERSION}" && \
-  \
-  # fallback 以防 curl/grep 失败
-  NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
-  OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
-  ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
-  ZSTD_VERSION="${ZSTD_VERSION:-1.5.7}" && \
-  CORERULESET_VERSION="${CORERULESET_VERSION}" && \
+  # \
+  # # fallback 以防 curl/grep 失败
+  # NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
+  # OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
+  # ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
+  # ZSTD_VERSION="${ZSTD_VERSION:-1.5.7}" && \
+  # CORERULESET_VERSION="${CORERULESET_VERSION}" && \
   \
   echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
   \
