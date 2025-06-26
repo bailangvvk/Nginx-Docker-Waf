@@ -123,3 +123,4 @@ WORKDIR /etc/nginx
 
 # 启动 nginx
 CMD ["./sbin/nginx", "-g", "daemon off;"]
+
