@@ -68,7 +68,7 @@ RUN apk add --no-cache \
   ./configure \
   --prefix=/opt/modsecurity \
   --enable-static \
-  --disable-shared
+  --disable-shared \
   && \
   make -j$(nproc) && \
   make install && \
