@@ -49,14 +49,13 @@ RUN apk add --no-cache \
   && \
   CORERULESET_VERSION=$(curl -s https://api.github.com/repos/coreruleset/coreruleset/releases/latest | grep -oE '"tag_name": "[^"]+' | cut -d'"' -f4 | sed 's/v//') \
   && \
-  clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity \
+  git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity \
     && cd ModSecurity \
-    && git submodule init \
-    && git submodule update \
+    && git submodule update --init --depth 1 \
     && ./build.sh \
     && ./configure \
-    && make && make install \
-    && cd .. && \
+    && make -j$(nproc) \
+    && make install && \
   git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
     && cd ModSecurity-nginx \
     && cd .. && \
