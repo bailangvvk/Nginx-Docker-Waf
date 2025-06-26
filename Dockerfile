@@ -1,5 +1,6 @@
+# syntax=docker/dockerfile:1
+
 FROM alpine:3.20 AS builder
-# FROM alpine:latest AS builder
 
 # 可选手动传参，否则自动抓最新版
 ARG NGINX_VERSION
@@ -9,8 +10,7 @@ ARG ZLIB_VERSION
 WORKDIR /build
 
 # 安装构建依赖
-RUN set -x && \
-    apk add --no-cache \
+RUN apk add --no-cache \
     build-base \
     curl \
     pcre-dev \
@@ -41,13 +41,13 @@ RUN set -x && \
   echo "ZSTD_VERSION=${ZSTD_VERSION}" && \
   echo "CORERULESET_VERSION=${CORERULESET_VERSION}" && \
   \
-  # # fallback 以防 curl/grep 失败
-  # NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
-  # OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
-  # ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
-  # ZSTD_VERSION="${ZSTD_VERSION:-1.5.7}" && \
-  # CORERULESET_VERSION="${CORERULESET_VERSION}" && \
-  # \
+  # fallback 以防 curl/grep 失败
+  NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
+  OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
+  ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
+  ZSTD_VERSION="${ZSTD_VERSION:-1.5.7}" && \
+  CORERULESET_VERSION="${CORERULESET_VERSION}" && \
+  \
   echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
   \
   curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
@@ -58,8 +58,6 @@ RUN set -x && \
   \
   curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
-  \
-  clone --recurse-submodules -j8 https://github.com/google/ngx_brotli && \
   \
   cd nginx-${NGINX_VERSION} && \
   ./configure \
@@ -76,14 +74,13 @@ RUN set -x && \
     --with-http_v2_module \
     --with-http_gzip_static_module \
     --with-http_stub_status_module \
-    --without-http_rewrite_module \
-    --without-http_auth_basic_module \
-    --with-threads \
-    && \
+    # --without-http_rewrite_module \
+    # --without-http_auth_basic_module \
+    --with-threads && \
   make -j$(nproc) && \
-  make install && \
+  make install \
+  && \
   strip /etc/nginx/sbin/nginx
-
 
 # 最小运行时镜像
 FROM busybox:1.35-uclibc
