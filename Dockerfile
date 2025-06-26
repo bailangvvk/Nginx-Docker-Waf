@@ -37,6 +37,12 @@ RUN apk add --no-cache \
     autoconf \
     automake \
     libtool \
+    openssl-dev \
+    yajl-dev \
+    lmdb-dev \
+    lua-dev \
+    pkgconfig \
+    pcre2-dev \
     && \
   NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
