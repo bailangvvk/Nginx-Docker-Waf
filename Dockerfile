@@ -1,5 +1,5 @@
-# FROM alpine:3.20 AS builder
-FROM alpine:latest AS builder
+FROM alpine:3.20 AS builder
+# FROM alpine:latest AS builder
 
 # 可选手动传参，否则自动抓最新版
 ARG NGINX_VERSION
