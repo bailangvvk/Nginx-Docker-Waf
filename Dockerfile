@@ -59,6 +59,8 @@ RUN set -x && \
   curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
   \
+  clone --recurse-submodules -j8 https://github.com/google/ngx_brotli && \
+  \
   cd nginx-${NGINX_VERSION} && \
   ./configure \
     --prefix=/etc/nginx \
