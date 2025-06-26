@@ -10,43 +10,64 @@ ARG ZLIB_VERSION
 WORKDIR /build
 
 # 安装构建依赖
-RUN set -x && \
-    apk add --no-cache \
+RUN apk add pcre-dev \
+    zlib-dev openssl-dev \
+    wget \
+    git \
     build-base \
-    curl \
-    pcre-dev \
-    zlib-dev \
+    brotli-dev \
+    libxml2-dev \
+    libxslt-dev \
+    curl-dev \
+    yajl-dev \
+    lmdb-dev \
+    geoip-dev \
+    lua-dev \
+    automake \
+    autoconf \
+    libtool \
+    pkgconfig \
     linux-headers \
+    pcre2-dev\
     perl \
-    sed \
-    grep \
     tar \
-    bash \
-    jq && \
-  NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) && \
-  OPENSSL_VERSION=$(wget -q -O - https://www.openssl.org/source/ | grep -oE 'openssl-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) && \
-  ZLIB_VERSION=$(wget -q -O - https://zlib.net/ | grep -oE 'zlib-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) && \
-  ZSTD_VERSION=$(curl -Ls https://github.com/facebook/zstd/releases/latest | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -c2-) && \
-  CORERULESET_VERSION=$(curl -s https://api.github.com/repos/coreruleset/coreruleset/releases/latest | grep -oE '"tag_name": "[^"]+' | cut -d'"' -f4 | sed 's/v//') && \
+    && \
+  NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
+  && \
+  OPENSSL_VERSION=$(wget -q -O - https://www.openssl.org/source/ | grep -oE 'openssl-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
+  && \
+  ZLIB_VERSION=$(wget -q -O - https://zlib.net/ | grep -oE 'zlib-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
+  && \
+  ZSTD_VERSION=$(curl -Ls https://github.com/facebook/zstd/releases/latest | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -c2-) \
+  && \
+  CORERULESET_VERSION=$(curl -s https://api.github.com/repos/coreruleset/coreruleset/releases/latest | grep -oE '"tag_name": "[^"]+' | cut -d'"' -f4 | sed 's/v//') \
+  && \
+  \
   echo "=============版本号=============" && \
   echo "NGINX_VERSION=${NGINX_VERSION}" && \
   echo "OPENSSL_VERSION=${OPENSSL_VERSION}" && \
   echo "ZLIB_VERSION=${ZLIB_VERSION}" && \
   echo "ZSTD_VERSION=${ZSTD_VERSION}" && \
   echo "CORERULESET_VERSION=${CORERULESET_VERSION}" && \
-  # # fallback 以防 curl/grep 失败
-  # NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
-  # OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
-  # ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
-  # ZSTD_VERSION="${ZSTD_VERSION:-1.5.7}" && \
-  # CORERULESET_VERSION="${CORERULESET_VERSION}" && \
+  \
+  # fallback 以防 curl/grep 失败
+  NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
+  OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
+  ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
+  ZSTD_VERSION="${ZSTD_VERSION:-1.5.7}" && \
+  CORERULESET_VERSION="${CORERULESET_VERSION}" && \
+  \
   echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
+  \
   curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
   tar xzf nginx.tar.gz && \
+  \
   curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz -o openssl.tar.gz && \
   tar xzf openssl.tar.gz && \
+  \
   curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
   tar xzf zlib.tar.gz && \
+  \
   cd nginx-${NGINX_VERSION} && \
   ./configure \
     --prefix=/etc/nginx \
@@ -65,34 +86,7 @@ RUN set -x && \
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
     --with-threads \
-    --with-http_realip_module \
-    --with-http_addition_module \
-    --with-http_sub_module \
-    --with-http_dav_module \
-    --with-http_flv_module \
-    --with-http_mp4_module \
-    --with-http_gunzip_module \
-    --with-http_gzip_static_module \
-    --with-http_random_index_module \
-    --with-http_secure_link_module \
-    --with-http_degradation_module \
-    --with-http_geoip_module \
-    --with-http_image_filter_module \
-    --with-http_xslt_module \
-    --with-http_auth_request_module \
-    --with-http_perl_module \
-    --with-mail \
-    --with-mail_ssl_module \
-    --with-stream \
-    --with-stream_ssl_module \
-    --with-stream_realip_module \
-    --with-http_proxy_module \
-    --with-http_upstream_hash_module \
-    --with-http_upstream_ip_hash_module \
-    --with-http_upstream_least_conn_module \
-    --with-http_upstream_zone_module \
-    --with-compat \
-    --with-debug && \
+    && \
   make -j$(nproc) && \
   make install && \
   strip /etc/nginx/sbin/nginx
@@ -100,6 +94,7 @@ RUN set -x && \
 
 # 最小运行时镜像
 FROM busybox:1.35-uclibc
+# FROM gcr.io/distroless/static
 
 # 拷贝构建产物
 COPY --from=builder /etc/nginx /etc/nginx
