@@ -110,8 +110,10 @@ RUN apk add --no-cache \
     --prefix=/etc/nginx \
     --user=root \
     --group=root \
-    --with-cc-opt="-static -static-libgcc" \
-    --with-ld-opt="-static" \
+    # --with-cc-opt="-static -static-libgcc" \
+    # --with-ld-opt="-static" \
+    --with-cc-opt="-static -static-libgcc -I../ModSecurity-nginx/libss/include" \
+    --with-ld-opt="-static -L../ModSecurity-nginx/libss/lib" \
     --with-openssl=../openssl-${OPENSSL_VERSION} \
     --with-zlib=../zlib-${ZLIB_VERSION} \
     --with-compat \
