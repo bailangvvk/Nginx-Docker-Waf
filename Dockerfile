@@ -47,6 +47,13 @@ RUN apk add --no-cache \
   && \
   git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
   && \
+  cd /build/ngx_brotli/deps/brotli && \
+    git submodule update --init --recursive && \
+    ./autogen.sh && \
+    ./configure && \
+    make -j$(nproc) && \
+    make install \
+  && \
   \
   echo "=============版本号=============" && \
   echo "NGINX_VERSION=${NGINX_VERSION}" && \
@@ -83,7 +90,7 @@ RUN apk add --no-cache \
     --with-openssl=../openssl-${OPENSSL_VERSION} \
     --with-zlib=../zlib-${ZLIB_VERSION} \
     --with-compat \
-    --add-module=../ngx_brotli \
+    --add-dynamic-module=../ngx_brotli \
     --with-pcre \
     --with-pcre-jit \
     --with-http_ssl_module \
