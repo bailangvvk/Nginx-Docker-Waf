@@ -10,7 +10,7 @@ ARG ZLIB_VERSION
 WORKDIR /build
 
 # 安装构建依赖
-RUN apk add --no-cache \
+apk add --no-cache \
     build-base \
     curl \
     pcre-dev \
@@ -24,6 +24,16 @@ RUN apk add --no-cache \
     git \
     geoip-dev \
     brotli-dev \
+    wget \
+    make \
+    gcc \
+    g++ \
+    musl-dev \
+    libxslt-dev \
+    libxml2-dev \
+    bash \
+    git \
+    libc-dev \
     && \
   NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
