@@ -68,10 +68,8 @@ RUN apk add --no-cache \
   ./configure --prefix=/opt/modsecurity && \
   make -j$(nproc) && \
   make install && \
-  cd ..
-
-  && \
-  git clone https://github.com/owasp-modsecurity/ModSecurity-nginx && \
+  cd .. && \
+  git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
 
   && \
   \
