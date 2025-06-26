@@ -34,6 +34,8 @@ RUN apk add --no-cache \
   && \
   CORERULESET_VERSION=$(curl -s https://api.github.com/repos/coreruleset/coreruleset/releases/latest | grep -oE '"tag_name": "[^"]+' | cut -d'"' -f4 | sed 's/v//') \
   && \
+  git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
+  && \
   \
   echo "=============版本号=============" && \
   echo "NGINX_VERSION=${NGINX_VERSION}" && \
