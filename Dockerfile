@@ -68,7 +68,7 @@ RUN apk add --no-cache \
   # git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
   # && cd ModSecurity-nginx \
   # && cd ..
-  && \
+  # && \
   \
   echo "=============版本号=============" && \
   echo "NGINX_VERSION=${NGINX_VERSION}" && \
