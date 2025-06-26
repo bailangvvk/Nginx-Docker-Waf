@@ -12,7 +12,8 @@ WORKDIR /build
 
 # 安装构建依赖
 RUN apk add --no-cache \
-    zlib-dev openssl-dev \
+    zlib-dev \
+    openssl-dev \
     wget \
     git \
     build-base \
@@ -31,8 +32,9 @@ RUN apk add --no-cache \
     linux-headers \
     pcre2-dev\
     perl \
-    tar && \
-  NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
+    tar
+
+RUN NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
   OPENSSL_VERSION=$(wget -q -O - https://www.openssl.org/source/ | grep -oE 'openssl-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
