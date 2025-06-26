@@ -12,6 +12,7 @@ WORKDIR /build
 
 # 安装构建依赖
 RUN apk add --no-cache \
+    pcre-dev \
     zlib-dev \
     openssl-dev \
     curl \
