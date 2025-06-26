@@ -116,6 +116,7 @@ RUN apk add --no-cache \
     --with-compat \
     # --add-dynamic-module=../ngx_brotli \
     # --add-dynamic-module=../ModSecurity-nginx \
+    --add-module=../ModSecurity-nginx \
     --with-pcre \
     --with-pcre-jit \
     --with-http_ssl_module \
