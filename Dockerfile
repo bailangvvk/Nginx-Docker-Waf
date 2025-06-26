@@ -45,6 +45,7 @@ RUN apk add --no-cache \
   && \
   CORERULESET_VERSION=$(curl -s https://api.github.com/repos/coreruleset/coreruleset/releases/latest | grep -oE '"tag_name": "[^"]+' | cut -d'"' -f4 | sed 's/v//') \
   && \
+
   # git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
   # && \
   # cd /build/ngx_brotli/deps/brotli && \
@@ -54,19 +55,20 @@ RUN apk add --no-cache \
   #   make -j$(nproc) && \
   #   make install \
   # && \
-  git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity \
-    && cd ModSecurity \
-    && git submodule init \
-    && git submodule update \
-    && ./build.sh \
-    && ./configure \
-    && make && make install \
-    && cd ..
-    && \
-    git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
-    && cd ModSecurity-nginx \
-    && cd ..
-    && \
+
+  # git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity \
+  #   && cd ModSecurity \
+  #   && git submodule init \
+  #   && git submodule update \
+  #   && ./build.sh \
+  #   && ./configure \
+  #   && make && make install \
+  #   && cd ..
+  #   && \
+  # git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
+  # && cd ModSecurity-nginx \
+  # && cd ..
+  && \
   \
   echo "=============版本号=============" && \
   echo "NGINX_VERSION=${NGINX_VERSION}" && \
