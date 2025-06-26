@@ -108,6 +108,8 @@ RUN set -x && apk add --no-cache \
   # strip /etc/nginx/sbin/nginx
   ./configure \
   --with-compat \
+  --with-cc-opt="-static -static-libgcc" \
+  --with-ld-opt="-static" \
   # --add-dynamic-module=../ngx_brotli \
   --add-dynamic-module=../ModSecurity-nginx \
   # --add-dynamic-module=../zstd-nginx-module \
