@@ -110,8 +110,9 @@ RUN apk add --no-cache \
   --with-compat \
   # --add-dynamic-module=../ngx_brotli \
   --add-dynamic-module=../ModSecurity-nginx \
-  # --add-dynamic-module=../zstd-nginx-module && \
-    make modules
+  # --add-dynamic-module=../zstd-nginx-module \
+  && \
+  make modules
 
 
 # ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
