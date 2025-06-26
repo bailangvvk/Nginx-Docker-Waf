@@ -14,6 +14,7 @@ WORKDIR /build
 RUN apk add --no-cache \
     zlib-dev \
     openssl-dev \
+    curl \
     wget \
     git \
     build-base \
