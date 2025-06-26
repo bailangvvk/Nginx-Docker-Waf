@@ -71,6 +71,8 @@ RUN apk add --no-cache \
     --with-ld-opt="-static" \
     --with-openssl=../openssl-${OPENSSL_VERSION} \
     --with-zlib=../zlib-${ZLIB_VERSION} \
+    --with-compat \
+    --add-module=../ngx_brotli \
     --with-pcre \
     --with-pcre-jit \
     --with-http_ssl_module \
