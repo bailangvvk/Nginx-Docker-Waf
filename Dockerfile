@@ -66,18 +66,17 @@ RUN apk add --no-cache \
   # && \
 
   git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity \
-    && cd ModSecurity \
-    && git submodule init \
-    && git submodule update \
-    && ./build.sh \
-    && ./configure \
-    --prefix=/build/ModSecurity-nginx/libss \
-    && make && make install \
-    && cd .. \
-    && \
-  git clone https://github.com/owasp-modsecurity/ModSecurity-nginx modsec_module \
-  && cd ModSecurity-nginx \
-  && cd .. \
+  cd ModSecurity \
+  git submodule init \
+  git submodule update \
+  ./build.sh \
+  ./configure --prefix=/opt/modsecurity \
+  make -j$(nproc) \
+  make install \
+
+  && \
+  git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
+
   && \
   \
   echo "=============版本号=============" && \
@@ -120,7 +119,6 @@ RUN apk add --no-cache \
     # --add-dynamic-module=../ngx_brotli \
     # --add-dynamic-module=../ModSecurity-nginx/libss \
     --add-module=../ModSecurity-nginx \
-    --add-module=../modsec_module \
     --with-pcre \
     --with-pcre-jit \
     --with-http_ssl_module \
