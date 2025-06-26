@@ -77,6 +77,7 @@ RUN apk add --no-cache \
     # --without-http_rewrite_module \
     # --without-http_auth_basic_module \
     --with-http_realip_module \
+    --with-http_geoip_module \
     --with-threads && \
   make -j$(nproc) && \
   make install \
