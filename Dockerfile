@@ -127,7 +127,8 @@ RUN apk add --no-cache \
     yajl-dev
 
 # 拷贝构建产物
-COPY --from=builder /usr/src/nginx-1.29.0/objs/*.so /etc/nginx/modules/
+# COPY --from=builder /usr/src/nginx-${NGINX_VERSION}/objs/*.so /etc/nginx/modules/
+# COPY --from=builder /usr/src/nginx-1.29.0/objs/*.so /etc/nginx/modules/
 COPY --from=builder /usr/local/modsecurity/lib/* /usr/lib/
 
 # 环境变量指定动态库搜索路径
