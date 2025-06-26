@@ -9,6 +9,8 @@ RUN apk add --no-cache \
     git \
     bash \
     linux-headers \
+    pcre2 \
+    pcre2-dev \
     pcre-dev \
     zlib-dev \
     openssl-dev \
