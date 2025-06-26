@@ -10,7 +10,7 @@ ARG ZLIB_VERSION
 WORKDIR /build
 
 # 安装构建依赖
-apk add --no-cache \
+RUN apk add --no-cache \
     build-base \
     curl \
     pcre-dev \
