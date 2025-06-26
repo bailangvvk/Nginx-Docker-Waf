@@ -120,7 +120,7 @@ RUN apk add --no-cache \
     # --add-dynamic-module=../ngx_brotli \
     # --add-dynamic-module=../ModSecurity-nginx/libss \
     --add-module=../ModSecurity-nginx \
-    --add-module=../modsec_module
+    --add-module=../modsec_module \
     --with-pcre \
     --with-pcre-jit \
     --with-http_ssl_module \
