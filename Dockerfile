@@ -64,7 +64,35 @@ RUN set -x && \
     --with-http_stub_status_module \
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
-    --with-threads && \
+    --with-threads \
+    --with-http_realip_module \
+    --with-http_addition_module \
+    --with-http_sub_module \
+    --with-http_dav_module \
+    --with-http_flv_module \
+    --with-http_mp4_module \
+    --with-http_gunzip_module \
+    --with-http_gzip_static_module \
+    --with-http_random_index_module \
+    --with-http_secure_link_module \
+    --with-http_degradation_module \
+    --with-http_geoip_module \
+    --with-http_image_filter_module \
+    --with-http_xslt_module \
+    --with-http_auth_request_module \
+    --with-http_perl_module \
+    --with-mail \
+    --with-mail_ssl_module \
+    --with-stream \
+    --with-stream_ssl_module \
+    --with-stream_realip_module \
+    --with-http_proxy_module \
+    --with-http_upstream_hash_module \
+    --with-http_upstream_ip_hash_module \
+    --with-http_upstream_least_conn_module \
+    --with-http_upstream_zone_module \
+    --with-compat \
+    --with-debug && \
   make -j$(nproc) && \
   make install && \
   strip /etc/nginx/sbin/nginx
