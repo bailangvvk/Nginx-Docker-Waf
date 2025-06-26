@@ -83,11 +83,13 @@ RUN set -ex && \
     #     --with-stream \
     #     --with-threads && \
     # make -j$(nproc) && make install && strip /etc/nginx/sbin/nginx
-    ./configure --with-compat \
-                # --add-dynamic-module=../ngx_brotli \
-                --add-dynamic-module=../ModSecurity-nginx \
-                # --add-dynamic-module=../zstd-nginx-module \
-                && \
+    ./configure \
+    --prefix=/etc/nginx \
+    --with-compat \
+    # --add-dynamic-module=../ngx_brotli \
+    --add-dynamic-module=../ModSecurity-nginx \
+    # --add-dynamic-module=../zstd-nginx-module \
+    && \
     make modules
 
 # ---
