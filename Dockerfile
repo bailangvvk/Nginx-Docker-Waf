@@ -10,7 +10,7 @@ ARG ZLIB_VERSION
 WORKDIR /build
 
 # 安装构建依赖
-RUN apk add pcre-dev \
+RUN apk add --no-cache \
     zlib-dev openssl-dev \
     wget \
     git \
@@ -30,8 +30,7 @@ RUN apk add pcre-dev \
     linux-headers \
     pcre2-dev\
     perl \
-    tar \
-    && \
+    tar && \
   NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
   OPENSSL_VERSION=$(wget -q -O - https://www.openssl.org/source/ | grep -oE 'openssl-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
@@ -85,8 +84,7 @@ RUN apk add pcre-dev \
     --with-http_stub_status_module \
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
-    --with-threads \
-    && \
+    --with-threads && \
   make -j$(nproc) && \
   make install && \
   strip /etc/nginx/sbin/nginx
