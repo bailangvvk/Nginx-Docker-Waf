@@ -63,7 +63,7 @@ RUN apk add --no-cache \
     && ./build.sh \
     && ./configure \
     && make && make install \
-    && cd ..
+    && cd .. \
     && \
   git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
   && cd ModSecurity-nginx \
