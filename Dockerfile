@@ -107,7 +107,7 @@ RUN apk add --no-cache \
   # make -j$(nproc) && \
   # make install && \
   # strip /etc/nginx/sbin/nginx
-  ./configure
+  ./configure \
   --with-compat \
   # --add-dynamic-module=../ngx_brotli \
   --add-dynamic-module=../ModSecurity-nginx \
