@@ -10,7 +10,7 @@ ARG ZLIB_VERSION
 WORKDIR /usr/src
 
 # 安装构建依赖
-RUN apk add --no-cache \
+RUN set -x && apk add --no-cache \
     build-base \
     curl \
     git \
@@ -112,7 +112,9 @@ RUN apk add --no-cache \
   --add-dynamic-module=../ModSecurity-nginx \
   # --add-dynamic-module=../zstd-nginx-module \
   && \
-  make modules
+  make modulesv && \
+
+  cd .. && mv nginx-${NGINX_VERSION} nginx
 
 
 # ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
@@ -128,7 +130,7 @@ RUN apk add --no-cache \
     yajl-dev
 
 # 拷贝构建产物
-COPY --from=builder /usr/src/nginx-${NGINX_VERSION}/objs/*.so /etc/nginx/modules/
+COPY --from=builder /usr/src/nginx/objs/*.so /etc/nginx/modules/
 COPY --from=builder /usr/local/modsecurity/lib/* /usr/lib/
 
 # 环境变量指定动态库搜索路径
