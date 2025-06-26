@@ -1,111 +1,88 @@
-# syntax=docker/dockerfile:1
-FROM alpine:3.20 AS builder
+FROM alpine:latest AS builder
+ARG NGINX_VERSION ZSTD_VERSION
 
-WORKDIR /build
+RUN apk add --no-cache pcre-dev zlib-dev openssl-dev wget git build-base brotli-dev \
+    libxml2-dev libxslt-dev curl-dev yajl-dev lmdb-dev geoip-dev lua-dev \
+    automake autoconf libtool pkgconfig linux-headers pcre2-dev
 
-RUN apk add --no-cache \
-    build-base \
-    curl \
-    git \
-    bash \
-    linux-headers \
-    pcre2 \
-    pcre2-dev \
-    pcre-dev \
-    zlib-dev \
-    openssl-dev \
-    libxml2-dev \
-    libxslt-dev \
-    yajl-dev \
-    lmdb-dev \
-    lua-dev \
-    geoip-dev \
-    brotli-dev \
-    libtool \
-    autoconf \
-    automake \
-    pkgconfig \
-    perl \
-    sed \
-    grep \
-    make \
-    g++ \
-    wget
+WORKDIR /usr/src
 
-# 设置版本号（可改）
-ARG NGINX_VERSION=1.29.0
-ARG OPENSSL_VERSION=3.3.0
-ARG ZLIB_VERSION=1.3.1
+# Download NGINX
+RUN wget https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
+    && tar -zxf nginx-${NGINX_VERSION}.tar.gz
 
-RUN set -ex && \
-    echo "Using: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
+# Clone Brotli module
+RUN git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli
 
-    # 构建 ModSecurity（动态）
-    git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity && \
-    cd ModSecurity && \
-    git submodule update --init --recursive && \
-    ./build.sh && \
-    ./configure --prefix=/usr/local/modsecurity --enable-shared --disable-static && \
-    make -j$(nproc) && \
-    make install && \
-    cp /usr/local/modsecurity/lib/pkgconfig/modsecurity.pc /usr/lib/pkgconfig && \
-    cd .. && \
+# Clone and build ModSecurity
+RUN git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity \
+    && cd ModSecurity \
+    && git submodule init \
+    && git submodule update \
+    && ./build.sh \
+    && ./configure \
+    && make && make install \
+    && cd ..
 
-    # 克隆 ModSecurity-nginx connector
-    git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity-nginx && \
+# Clone ModSecurity NGINX module
+RUN git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
+    && cd ModSecurity-nginx \
+    # && git checkout ef64996 \
+    && cd ..
 
-    # 下载并解压 Nginx、OpenSSL、Zlib
-    curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz | tar xz && \
-    curl -fSL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz | tar xz && \
-    curl -fSL https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz | tar xz && \
+# Download and build Zstandard
+RUN wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
+    && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
+    && cd zstd-${ZSTD_VERSION} \
+    && make clean \
+    && CFLAGS="-fPIC" make && make install \
+    && cd ..
 
-    # 构建 Nginx（全静态，加载动态 ModSecurity）
-    cd nginx-${NGINX_VERSION} && \
-    PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/local/modsecurity/lib/pkgconfig" ./configure \
-        --prefix=/etc/nginx \
-        --user=root \
-        --group=root \
-        --with-cc-opt="-static -I/usr/local/modsecurity/include" \
-        --with-ld-opt="-static -L/usr/local/modsecurity/lib -lmodsecurity" \
-        --with-openssl=../openssl-${OPENSSL_VERSION} \
-        --with-zlib=../zlib-${ZLIB_VERSION} \
-        --add-module=../ModSecurity-nginx \
-        --with-compat \
-        --with-pcre \
-        --with-pcre-jit \
-        --with-http_ssl_module \
-        --with-http_v2_module \
-        --with-http_gzip_static_module \
-        --with-http_sub_module \
-        --with-http_stub_status_module \
-        --with-http_realip_module \
-        --with-http_geoip_module \
-        --with-stream \
-        --with-threads && \
-    make -j$(nproc) && make install && strip /etc/nginx/sbin/nginx
+# Clone Zstandard NGINX module
+RUN git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git
 
-# ---
+# Configure and build NGINX with modules
+RUN cd nginx-${NGINX_VERSION} && \
+    ./configure --with-compat \
+                --add-dynamic-module=../ngx_brotli \
+                --add-dynamic-module=../ModSecurity-nginx \
+                --add-dynamic-module=../zstd-nginx-module && \
+    make modules
 
-# ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
-FROM alpine:3.20 AS runtime
 
-# 安装运行依赖
-RUN apk add --no-cache \
-    libstdc++ \
-    yajl \
-    libxml2 \
-    lua \
-    curl \
-    geoip \
-    brotli
 
-# 拷贝构建产物
-COPY --from=builder /etc/nginx /etc/nginx
-COPY --from=builder /usr/local/modsecurity /usr/local/modsecurity
 
-# 环境变量指定动态库搜索路径
-ENV LD_LIBRARY_PATH=/usr/local/modsecurity/lib
 
-EXPOSE 80 443
-WORKDIR /etc/nginx
-CMD ["./sbin/nginx", "-g", "daemon off;"]
+FROM nginx:alpine
+ARG NGINX_VERSION CORERULESET_VERSION
+
+# 复制压缩模块和 ModSecurity
+COPY --from=builder /usr/src/nginx-${NGINX_VERSION}/objs/*.so /etc/nginx/modules/
+COPY --from=builder /usr/local/modsecurity/lib/* /usr/lib/
+
+# 创建配置目录并下载必要文件
+RUN mkdir -p /etc/nginx/modsec/plugins \
+    && wget https://github.com/coreruleset/coreruleset/archive/v${CORERULESET_VERSION}.tar.gz \
+    && tar -xzf v${CORERULESET_VERSION}.tar.gz --strip-components=1 -C /etc/nginx/modsec \
+    && rm -f v${CORERULESET_VERSION}.tar.gz \
+    && wget -P /etc/nginx/modsec/plugins https://raw.githubusercontent.com/coreruleset/wordpress-rule-exclusions-plugin/master/plugins/wordpress-rule-exclusions-before.conf \
+    && wget -P /etc/nginx/modsec/plugins https://raw.githubusercontent.com/coreruleset/wordpress-rule-exclusions-plugin/master/plugins/wordpress-rule-exclusions-config.conf \
+    && wget -P /etc/nginx/modsec/plugins https://raw.githubusercontent.com/kejilion/nginx/main/waf/ldnmp-before.conf \
+    && cp /etc/nginx/modsec/crs-setup.conf.example /etc/nginx/modsec/crs-setup.conf \
+    && echo 'SecAction "id:900110, phase:1, pass, setvar:tx.inbound_anomaly_score_threshold=30, setvar:tx.outbound_anomaly_score_threshold=16"' >> /etc/nginx/modsec/crs-setup.conf \
+    && wget https://raw.githubusercontent.com/owasp-modsecurity/ModSecurity/v3/master/modsecurity.conf-recommended -O /etc/nginx/modsec/modsecurity.conf \
+    && sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/nginx/modsec/modsecurity.conf \
+    && sed -i 's/SecPcreMatchLimit [0-9]\+/SecPcreMatchLimit 20000/' /etc/nginx/modsec/modsecurity.conf \
+    && sed -i 's/SecPcreMatchLimitRecursion [0-9]\+/SecPcreMatchLimitRecursion 20000/' /etc/nginx/modsec/modsecurity.conf \
+    && sed -i 's/^SecRequestBodyLimit\s\+[0-9]\+/SecRequestBodyLimit 52428800/' /etc/nginx/modsec/modsecurity.conf \
+    && sed -i 's/^SecRequestBodyNoFilesLimit\s\+[0-9]\+/SecRequestBodyNoFilesLimit 524288/' /etc/nginx/modsec/modsecurity.conf \
+    && sed -i 's/^SecAuditEngine RelevantOnly/SecAuditEngine Off/' /etc/nginx/modsec/modsecurity.conf \
+    && echo 'Include /etc/nginx/modsec/crs-setup.conf' >> /etc/nginx/modsec/modsecurity.conf \
+    && echo 'Include /etc/nginx/modsec/plugins/*-config.conf' >> /etc/nginx/modsec/modsecurity.conf \
+    && echo 'Include /etc/nginx/modsec/plugins/*-before.conf' >> /etc/nginx/modsec/modsecurity.conf \
+    && echo 'Include /etc/nginx/modsec/rules/*.conf' >> /etc/nginx/modsec/modsecurity.conf \
+    && echo 'Include /etc/nginx/modsec/plugins/*-after.conf' >> /etc/nginx/modsec/modsecurity.conf \
+    && apk add --no-cache lua5.1 lua5.1-dev pcre pcre-dev yajl yajl-dev \
+    && ldconfig /usr/lib \
+    && wget https://raw.githubusercontent.com/owasp-modsecurity/ModSecurity/v3/master/unicode.mapping -O /etc/nginx/modsec/unicode.mapping \
+    && rm -rf /var/cache/apk/*
