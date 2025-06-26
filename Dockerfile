@@ -71,6 +71,7 @@ RUN apk add --no-cache \
     && git submodule update \
     && ./build.sh \
     && ./configure \
+    --prefix=/build/ModSecurity-nginx/libss \
     && make && make install \
     && cd .. \
     && \
@@ -115,7 +116,7 @@ RUN apk add --no-cache \
     --with-zlib=../zlib-${ZLIB_VERSION} \
     --with-compat \
     # --add-dynamic-module=../ngx_brotli \
-    # --add-dynamic-module=../ModSecurity-nginx \
+    # --add-dynamic-module=../ModSecurity-nginx/libss \
     --add-module=../ModSecurity-nginx \
     --with-pcre \
     --with-pcre-jit \
