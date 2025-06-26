@@ -2,11 +2,6 @@
 
 FROM alpine:3.20 AS builder
 
-# 可选手动传参，否则自动抓最新版
-ARG NGINX_VERSION
-ARG OPENSSL_VERSION
-ARG ZLIB_VERSION
-
 WORKDIR /build
 
 # 安装构建依赖
@@ -113,7 +108,7 @@ RUN apk add --no-cache \
     # --with-cc-opt="-static -static-libgcc" \
     # --with-ld-opt="-static" \
     --with-cc-opt="-static -static-libgcc -I/opt/modsecurity/include" \
-    --with-ld-opt="-static -L/opt/modsecurity/lib" \
+    --with-ld-opt="-static -L/opt/modsecurity/lib -lmodsecurity"
     --with-openssl=../openssl-${OPENSSL_VERSION} \
     --with-zlib=../zlib-${ZLIB_VERSION} \
     --with-compat \
