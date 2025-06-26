@@ -51,6 +51,7 @@ RUN set -ex && \
     ./configure --prefix=/usr/local/modsecurity --enable-static --disable-shared && \
     make -j$(nproc) && \
     make install && \
+    ls -l /usr/local/modsecurity/lib && \
     # 把 pkgconfig 文件复制到标准路径，方便 nginx configure 找到
     cp /usr/local/modsecurity/lib/pkgconfig/modsecurity.pc /usr/lib/pkgconfig/ && \
     cd .. && \
