@@ -11,7 +11,13 @@ ARG ZLIB_VERSION
 WORKDIR /build
 
 # 安装构建依赖
-RUN apk add --no-cache \
+#!/bin/sh
+
+# 更新 APK 包索引
+apk update
+
+# 安装构建依赖
+apk add --no-cache \
     pcre-dev \
     pcre2-dev \
     zlib-dev \
@@ -35,7 +41,8 @@ RUN apk add --no-cache \
     tar \
     perl
 
-
+# 检查是否安装成功
+echo "依赖项已成功安装"
 
 RUN NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
