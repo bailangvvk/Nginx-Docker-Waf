@@ -42,13 +42,13 @@ RUN set -x && \
   echo "ZSTD_VERSION=${ZSTD_VERSION}" && \
   echo "CORERULESET_VERSION=${CORERULESET_VERSION}" && \
   \
-  # fallback 以防 curl/grep 失败
-  NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
-  OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
-  ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
-  ZSTD_VERSION="${ZSTD_VERSION:-1.5.7}" && \
-  CORERULESET_VERSION="${CORERULESET_VERSION}" && \
-  \
+  # # fallback 以防 curl/grep 失败
+  # NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
+  # OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
+  # ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
+  # ZSTD_VERSION="${ZSTD_VERSION:-1.5.7}" && \
+  # CORERULESET_VERSION="${CORERULESET_VERSION}" && \
+  # \
   echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
   \
   curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
