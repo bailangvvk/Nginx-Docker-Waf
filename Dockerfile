@@ -112,7 +112,7 @@ RUN set -x && apk add --no-cache \
   --add-dynamic-module=../ModSecurity-nginx \
   # --add-dynamic-module=../zstd-nginx-module \
   && \
-  make modulesv && \
+  make modules && \
 
   cd .. && mv nginx-${NGINX_VERSION} nginx
 
