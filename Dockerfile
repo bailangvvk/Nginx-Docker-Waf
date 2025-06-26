@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# FROM alpine:3.20 AS builder
-FROM alpine:latest AS builder
+FROM alpine:3.20 AS builder
 
 # 可选手动传参，否则自动抓最新版
 ARG NGINX_VERSION
@@ -11,37 +10,21 @@ ARG ZLIB_VERSION
 WORKDIR /build
 
 # 安装构建依赖
-#!/bin/sh
-
-# 更新 APK 包索引
-apk update
-
-# 安装构建依赖
-apk add --no-cache \
-    pcre-dev \
-    pcre2-dev \
-    zlib-dev \
-    openssl-dev \
-    wget \
-    git \
+RUN set -x && \
+    apk add --no-cache \
     build-base \
-    brotli-dev \
-    libxml2-dev \
-    libxslt-dev \
-    curl-dev \
-    yajl-dev \
-    lmdb-dev \
-    geoip-dev \
-    lua-dev \
-    automake \
-    autoconf \
-    libtool \
-    pkgconfig \
+    curl \
+    pcre-dev \
+    zlib-dev \
     linux-headers \
+    perl \
+    sed \
+    grep \
     tar \
-    perl
-
-RUN NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
+    bash \
+    jq \
+    && \
+  NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
   OPENSSL_VERSION=$(wget -q -O - https://www.openssl.org/source/ | grep -oE 'openssl-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
   && \
@@ -94,7 +77,8 @@ RUN NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE '
     --with-http_stub_status_module \
     --without-http_rewrite_module \
     --without-http_auth_basic_module \
-    --with-threads && \
+    --with-threads \
+    && \
   make -j$(nproc) && \
   make install && \
   strip /etc/nginx/sbin/nginx
