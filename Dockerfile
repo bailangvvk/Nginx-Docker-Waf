@@ -65,7 +65,11 @@ RUN apk add --no-cache \
   git submodule init && \
   git submodule update && \
   ./build.sh && \
-  ./configure --prefix=/opt/modsecurity && \
+  ./configure \
+  --prefix=/opt/modsecurity \
+  --enable-static \
+  --disable-shared
+  && \
   make -j$(nproc) && \
   make install && \
   cd .. && \
@@ -99,13 +103,13 @@ RUN apk add --no-cache \
   tar xzf zlib.tar.gz && \
   \
   cd nginx-${NGINX_VERSION} && \
-  ./configure \
+  PKG_CONFIG_PATH=/opt/modsecurity/lib/pkgconfig ./configure \
     --prefix=/etc/nginx \
     --user=root \
     --group=root \
     # --with-cc-opt="-static -static-libgcc" \
     # --with-ld-opt="-static" \
-    --with-cc-opt="-static -static-libgcc -I/opt/modsecurity/include" \
+    --with-cc-opt="-static -I/opt/modsecurity/include" \
     --with-ld-opt="-static -L/opt/modsecurity/lib -lmodsecurity" \
     --with-openssl=../openssl-${OPENSSL_VERSION} \
     --with-zlib=../zlib-${ZLIB_VERSION} \
