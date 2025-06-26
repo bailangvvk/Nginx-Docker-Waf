@@ -75,7 +75,7 @@ RUN apk add --no-cache \
     && make && make install \
     && cd .. \
     && \
-  git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
+  git clone https://github.com/owasp-modsecurity/ModSecurity-nginx modsec_module \
   && cd ModSecurity-nginx \
   && cd .. \
   && \
@@ -120,6 +120,7 @@ RUN apk add --no-cache \
     # --add-dynamic-module=../ngx_brotli \
     # --add-dynamic-module=../ModSecurity-nginx/libss \
     --add-module=../ModSecurity-nginx \
+    --add-module=../modsec_module
     --with-pcre \
     --with-pcre-jit \
     --with-http_ssl_module \
