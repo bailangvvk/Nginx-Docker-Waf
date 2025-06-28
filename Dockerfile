@@ -4,11 +4,12 @@ FROM alpine:3.20 AS builder
 ARG NGINX_VERSION
 # ARG OPENSSL_VERSION
 # ARG ZLIB_VERSION
+ARG CORERULESET_VERSION
 
 WORKDIR /usr/src
 
 # 安装构建依赖
-RUN set -x && apk add --no-cache \
+RUN set -eux && apk add --no-cache \
     build-base \
     curl \
     git \
