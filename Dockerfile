@@ -121,6 +121,8 @@ RUN set -eux && apk add --no-cache \
 # ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
 FROM alpine:3.20 AS runtime
 
+ARG CORERULESET_VERSION
+
 # 笨方法 传递变量
 COPY --from=builder /tmp/coreruleset_version /tmp/coreruleset_version
 RUN export CORERULESET_VERSION=$(cat /tmp/coreruleset_version) && \
