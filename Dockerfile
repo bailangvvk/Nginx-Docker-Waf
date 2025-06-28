@@ -118,8 +118,11 @@ RUN set -eux && apk add --no-cache \
     # --add-dynamic-module=../zstd-nginx-module \
     && \
     make modules && \
+    # && find /usr/local/modsecurity/lib -type f ! -name '*.so*' -delete \
+    && strip /usr/local/modsecurity/lib/*.so*
+
     # 查看模块占用大小
-    du -sh /usr/local/modsecurity/lib
+    && du -sh /usr/local/modsecurity/lib
 
     # ./configure \
     # --with-compat \
