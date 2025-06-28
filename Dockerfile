@@ -138,7 +138,7 @@ COPY --from=builder /usr/local/modsecurity/lib/* /usr/lib/
 ENV LD_LIBRARY_PATH=/usr/local/modsecurity/lib
 
 # 创建配置目录并下载必要文件
-RUN set -eux && \
+RUN set -eux \
     && apk add --no-cache lua5.1 lua5.1-dev pcre pcre-dev yajl yajl-dev curl \
     mkdir -p /etc/nginx/modsec/plugins \
     && CORERULESET_VERSION=$(curl -s https://api.github.com/repos/coreruleset/coreruleset/releases/latest | grep -oE '"tag_name": "[^"]+' | cut -d'"' -f4 | sed 's/v//') \
@@ -164,7 +164,8 @@ RUN set -eux && \
     && echo 'Include /etc/nginx/modsec/plugins/*-after.conf' >> /etc/nginx/modsec/modsecurity.conf \
     && ldconfig /usr/lib \
     && wget https://raw.githubusercontent.com/owasp-modsecurity/ModSecurity/v3/master/unicode.mapping -O /etc/nginx/modsec/unicode.mapping \
-    && rm -rf /var/cache/apk/*
+    && rm -rf /var/cache/apk/* \
+    && apk del curl
 
 EXPOSE 80 443
 WORKDIR /etc/nginx
