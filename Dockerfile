@@ -130,8 +130,9 @@ RUN set -eux && apk add --no-cache \
     --add-dynamic-module=../ModSecurity-nginx \
     --add-dynamic-module=../zstd-nginx-module \
     && \
-    make modules && \
-    mv /usr/src/nginx-${NGINX_VERSION} /usr/src/nginx && \
+    make modules \
+    # && mv /usr/src/nginx-${NGINX_VERSION} /usr/src/nginx
+    && \
     # 查看未压缩前的大小
     du -sh /usr/local/modsecurity/lib && \
     strip /usr/local/modsecurity/lib/*.so* && \
@@ -162,8 +163,8 @@ FROM nginx:alpine
 
 # 拷贝构建产物
 # COPY --from=builder /usr/src/nginx-${NGINX_VERSION}/objs/*.so /etc/nginx/modules/
-# COPY --from=builder /usr/src/nginx-1.29.0/objs/*.so /etc/nginx/modules/
-COPY --from=builder /usr/src/nginx/objs/*.so /etc/nginx/modules/
+COPY --from=builder /usr/src/nginx-1.29.0/objs/*.so /etc/nginx/modules/
+# COPY --from=builder /usr/src/nginx/objs/*.so /etc/nginx/modules/
 COPY --from=builder /usr/local/modsecurity/lib/* /usr/lib/
 
 # 环境变量指定动态库搜索路径
