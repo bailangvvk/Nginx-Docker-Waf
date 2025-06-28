@@ -71,6 +71,8 @@ RUN set -eux && apk add --no-cache \
     && CFLAGS="-fPIC" make && make install \
     && cd .. \
     && \
+    git clone --depth=10 https://github.com/tokers/zstd-nginx-module.git \
+    && \
     \
     echo "=============版本号=============" && \
     echo "NGINX_VERSION=${NGINX_VERSION}" && \
