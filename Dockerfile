@@ -1,5 +1,7 @@
 FROM alpine:latest AS builder
 
+ARG NGINX_VERSION
+
 WORKDIR /usr/src
 
 # 安装构建依赖
