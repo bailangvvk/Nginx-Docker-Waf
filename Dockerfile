@@ -128,7 +128,8 @@ RUN set -eux && apk add --no-cache \
     make install
 
 # ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
-FROM alpine:3.20 AS runtime
+# FROM alpine:3.20 AS runtime
+FROM nginx:alpine
 
 # 安装运行依赖
 # RUN apk add --no-cache \
