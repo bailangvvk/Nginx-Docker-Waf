@@ -110,22 +110,25 @@ RUN set -eux && apk add --no-cache \
     # make install && \
     # strip /etc/nginx/sbin/nginx
 
-    # ./configure \
-    # --with-compat \
-    # # --add-dynamic-module=../ngx_brotli \
-    # --add-dynamic-module=../ModSecurity-nginx \
-    # # --add-dynamic-module=../zstd-nginx-module \
-    # && \
-    # make modules
-
+    # 编译生成.so模块
     ./configure \
     --with-compat \
     # --add-dynamic-module=../ngx_brotli \
     --add-dynamic-module=../ModSecurity-nginx \
     # --add-dynamic-module=../zstd-nginx-module \
     && \
-    make -j$(nproc) && \
-    make install
+    make modules && \
+    # 查看模块占用大小
+    du -sh /usr/local/modsecurity/lib
+
+    # ./configure \
+    # --with-compat \
+    # # --add-dynamic-module=../ngx_brotli \
+    # --add-dynamic-module=../ModSecurity-nginx \
+    # # --add-dynamic-module=../zstd-nginx-module \
+    # && \
+    # make -j$(nproc) && \
+    # make install
 
 # ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
 # FROM alpine:3.20 AS runtime
