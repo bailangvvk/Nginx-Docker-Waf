@@ -116,6 +116,8 @@ RUN set -eux && apk add --no-cache \
 # ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
 FROM alpine:3.20 AS runtime
 
+ARG CORERULESET_VERSION
+
 # 安装运行依赖
 # RUN apk add --no-cache \
 #     lua5.1 \
