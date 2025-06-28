@@ -123,9 +123,10 @@ FROM alpine:3.20 AS runtime
 
 # 笨方法 传递变量
 COPY --from=builder /tmp/coreruleset_version /tmp/coreruleset_version
-RUN CORERULESET_VERSION=$(cat /tmp/coreruleset_version) && \
-    echo "Version is $CORERULESET_VERSION" && \
+RUN export CORERULESET_VERSION=$(cat /tmp/coreruleset_version) && \
     rm -rf /tmp/coreruleset_version
+
+ENV CORERULESET_VERSION=${CORERULESET_VERSION}
 
 # 安装运行依赖
 # RUN apk add --no-cache \
