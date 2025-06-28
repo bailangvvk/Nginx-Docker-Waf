@@ -116,7 +116,11 @@ RUN set -eux && apk add --no-cache \
 # ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
 FROM alpine:3.20 AS runtime
 
+# 1. 声明构建参数
 ARG CORERULESET_VERSION
+
+# 2. 设置为环境变量，让后续 RUN 和 CMD 均能使用
+ENV CORERULESET_VERSION=${CORERULESET_VERSION:-4.15.0}
 
 # 安装运行依赖
 # RUN apk add --no-cache \
