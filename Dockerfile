@@ -38,6 +38,7 @@ RUN set -eux && apk add --no-cache \
     g++ \
     wget \
     && \
+    # 各种组件的版本号获取 纯数字
     NGINX_VERSION=$(wget -q -O - https://nginx.org/en/download.html | grep -oE 'nginx-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
     && \
     OPENSSL_VERSION=$(wget -q -O - https://www.openssl.org/source/ | grep -oE 'openssl-[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d'-' -f2) \
@@ -48,6 +49,7 @@ RUN set -eux && apk add --no-cache \
     && \
     CORERULESET_VERSION=$(curl -s https://api.github.com/repos/coreruleset/coreruleset/releases/latest | grep -oE '"tag_name": "[^"]+' | cut -d'"' -f4 | sed 's/v//') \
     && \
+    # ModSecurity模块和ModSecurity-nginx模块
     git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity \
     && cd ModSecurity \
     && git submodule update --init --depth 1 \
@@ -65,16 +67,17 @@ RUN set -eux && apk add --no-cache \
     echo "ZLIB_VERSION=${ZLIB_VERSION}" && \
     echo "ZSTD_VERSION=${ZSTD_VERSION}" && \
     echo "CORERULESET_VERSION=${CORERULESET_VERSION}" && \
+    # \
+    # # fallback 以防 curl/grep 失败
+    # NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
+    # OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
+    # ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
+    # ZSTD_VERSION="${ZSTD_VERSION:-1.5.7}" && \
+    # CORERULESET_VERSION="${CORERULESET_VERSION}" && \
+    # \
+    # echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
     \
-    # fallback 以防 curl/grep 失败
-    NGINX_VERSION="${NGINX_VERSION:-1.29.0}" && \
-    OPENSSL_VERSION="${OPENSSL_VERSION:-3.3.0}" && \
-    ZLIB_VERSION="${ZLIB_VERSION:-1.3.1}" && \
-    ZSTD_VERSION="${ZSTD_VERSION:-1.5.7}" && \
-    CORERULESET_VERSION="${CORERULESET_VERSION}" && \
-    \
-    echo "==> Using versions: nginx-${NGINX_VERSION}, openssl-${OPENSSL_VERSION}, zlib-${ZLIB_VERSION}" && \
-    \
+    # 下载需要的模块 填入版本号
     curl -fSL https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -o nginx.tar.gz && \
     tar xzf nginx.tar.gz && \
     \
@@ -84,6 +87,7 @@ RUN set -eux && apk add --no-cache \
     curl -fSL https://fossies.org/linux/misc/zlib-${ZLIB_VERSION}.tar.gz -o zlib.tar.gz && \
     tar xzf zlib.tar.gz && \
     \
+    # 编译安装步骤
     cd nginx-${NGINX_VERSION} && \
     # ./configure \
     #   --prefix=/etc/nginx \
@@ -120,7 +124,7 @@ FROM alpine:3.20 AS runtime
 ARG CORERULESET_VERSION
 
 # 2. 设置为环境变量，让后续 RUN 和 CMD 均能使用
-ENV CORERULESET_VERSION=${CORERULESET_VERSION:-4.15.0}
+ENV CORERULESET_VERSION=${CORERULESET_VERSION}
 
 # 安装运行依赖
 # RUN apk add --no-cache \
