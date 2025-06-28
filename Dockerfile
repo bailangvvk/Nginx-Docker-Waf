@@ -1,10 +1,10 @@
 FROM alpine:3.20 AS builder
 
 # 可选手动传参，否则自动抓最新版
-ARG NGINX_VERSION
-# ARG OPENSSL_VERSION
-# ARG ZLIB_VERSION
-ARG CORERULESET_VERSION
+# ARG NGINX_VERSION
+# # ARG OPENSSL_VERSION
+# # ARG ZLIB_VERSION
+# ARG CORERULESET_VERSION
 
 WORKDIR /usr/src
 
@@ -48,6 +48,7 @@ RUN set -eux && apk add --no-cache \
     ZSTD_VERSION=$(curl -Ls https://github.com/facebook/zstd/releases/latest | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -c2-) \
     && \
     CORERULESET_VERSION=$(curl -s https://api.github.com/repos/coreruleset/coreruleset/releases/latest | grep -oE '"tag_name": "[^"]+' | cut -d'"' -f4 | sed 's/v//') \
+    && echo "$CORERULESET_VERSION" > /tmp/coreruleset_version \
     && \
     # ModSecurity模块和ModSecurity-nginx模块
     git clone --depth 1 https://github.com/owasp-modsecurity/ModSecurity \
@@ -120,11 +121,11 @@ RUN set -eux && apk add --no-cache \
 # ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
 FROM alpine:3.20 AS runtime
 
-# 1. 声明构建参数
-ARG CORERULESET_VERSION
-
-# 2. 设置为环境变量，让后续 RUN 和 CMD 均能使用
-ENV CORERULESET_VERSION=${CORERULESET_VERSION}
+# 笨方法 传递变量
+COPY --from=builder /tmp/coreruleset_version /tmp/coreruleset_version
+RUN CORERULESET_VERSION=$(cat /tmp/coreruleset_version) && \
+    echo "Version is $CORERULESET_VERSION" && \
+    rm -rf /tmp/coreruleset_version
 
 # 安装运行依赖
 # RUN apk add --no-cache \
