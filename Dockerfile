@@ -117,7 +117,7 @@ RUN set -eux && apk add --no-cache \
     --add-dynamic-module=../ModSecurity-nginx \
     # --add-dynamic-module=../zstd-nginx-module \
     && \
-    make modules && \
+    make modules \
     # && find /usr/local/modsecurity/lib -type f ! -name '*.so*' -delete \
     && strip /usr/local/modsecurity/lib/*.so*
 
