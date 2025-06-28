@@ -61,7 +61,7 @@ jobs:
       - name: Build and Push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./Dockerfile.alpine
+          context: ./Dockerfile
           # platforms: linux/amd64,linux/arm64
           platforms: linux/amd64
           push: true
