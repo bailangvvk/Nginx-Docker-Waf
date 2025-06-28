@@ -122,7 +122,7 @@ RUN set -eux && apk add --no-cache \
     && strip /usr/local/modsecurity/lib/*.so*
 
     # 查看模块占用大小
-    && du -sh /usr/local/modsecurity/lib
+    && du -sh /usr/local/modsecurity/lib \
 
     # ./configure \
     # --with-compat \
