@@ -60,6 +60,17 @@ RUN set -eux && apk add --no-cache \
     git clone https://github.com/owasp-modsecurity/ModSecurity-nginx \
     && cd ModSecurity-nginx \
     && cd .. && \
+    # Br压缩模块
+    clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
+    && \
+    # ZSTD压缩模块
+    wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
+    && tar -xzf zstd-${ZSTD_VERSION}.tar.gz \
+    && cd zstd-${ZSTD_VERSION} \
+    && make clean \
+    && CFLAGS="-fPIC" make && make install \
+    && cd .. \
+    && \
     \
     echo "=============版本号=============" && \
     echo "NGINX_VERSION=${NGINX_VERSION}" && \
@@ -113,12 +124,12 @@ RUN set -eux && apk add --no-cache \
     # 编译生成.so模块
     ./configure \
     --with-compat \
-    # --add-dynamic-module=../ngx_brotli \
+    --add-dynamic-module=../ngx_brotli \
     --add-dynamic-module=../ModSecurity-nginx \
-    # --add-dynamic-module=../zstd-nginx-module \
+    --add-dynamic-module=../zstd-nginx-module \
     && \
     make modules && \
-    # 查看模块占用大小
+    mv /usr/src/nginx-${NGINX_VERSION} /usr/src/nginx && \
     # 查看未压缩前的大小
     du -sh /usr/local/modsecurity/lib && \
     strip /usr/local/modsecurity/lib/*.so* && \
@@ -150,6 +161,7 @@ FROM nginx:alpine
 # 拷贝构建产物
 # COPY --from=builder /usr/src/nginx-${NGINX_VERSION}/objs/*.so /etc/nginx/modules/
 # COPY --from=builder /usr/src/nginx-1.29.0/objs/*.so /etc/nginx/modules/
+COPY --from=builder /usr/src/nginx/objs/*.so /etc/nginx/modules/
 COPY --from=builder /usr/local/modsecurity/lib/* /usr/lib/
 
 # 环境变量指定动态库搜索路径
