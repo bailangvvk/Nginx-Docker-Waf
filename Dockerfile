@@ -119,7 +119,7 @@ RUN set -eux && apk add --no-cache \
     && \
     make modules \
     # && find /usr/local/modsecurity/lib -type f ! -name '*.so*' -delete \
-    && strip /usr/local/modsecurity/lib/*.so*
+    && strip /usr/local/modsecurity/lib/*.so* \
 
     # 查看模块占用大小
     && du -sh /usr/local/modsecurity/lib \
