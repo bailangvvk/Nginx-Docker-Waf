@@ -61,7 +61,7 @@ RUN set -eux && apk add --no-cache \
     && cd ModSecurity-nginx \
     && cd .. && \
     # Br压缩模块
-    clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
+    git clone --recurse-submodules -j8 https://github.com/google/ngx_brotli \
     && \
     # ZSTD压缩模块
     wget https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz \
