@@ -187,4 +187,4 @@ RUN set -eux \
 
 EXPOSE 80 443
 WORKDIR /etc/nginx
-CMD ["./sbin/nginx", "-g", "daemon off;"]
+CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
