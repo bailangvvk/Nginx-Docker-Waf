@@ -136,7 +136,10 @@ RUN set -eux && apk add --no-cache \
     # 查看未压缩前的大小
     du -sh /usr/local/modsecurity/lib && \
     strip /usr/local/modsecurity/lib/*.so* && \
-    du -sh /usr/local/modsecurity/lib
+    du -sh /usr/local/modsecurity/lib && \
+    du -sh /usr/src && \
+    strip /usr/src/*.so* && \
+    du -sh /usr/src
 
 
     # ./configure \
