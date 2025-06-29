@@ -136,10 +136,10 @@ RUN set -eux && apk add --no-cache \
     # 查看未压缩前的大小
     du -sh /usr/local/modsecurity/lib && \
     strip /usr/local/modsecurity/lib/*.so* && \
-    du -sh /usr/local/modsecurity/lib && \
-    du -sh /usr/src && \
-    find /usr/src/ -type f -name '*.so*' -exec strip {} \; && \
-    du -sh /usr/src
+    du -sh /usr/local/modsecurity/lib
+    # du -sh /usr/src && \
+    # find /usr/src/ -type f -name '*.so' -exec strip {} \; && \
+    # du -sh /usr/src
 
 
     # ./configure \
@@ -166,7 +166,7 @@ FROM nginx:alpine
 
 # 拷贝构建产物
 # COPY --from=builder /usr/src/nginx-${NGINX_VERSION}/objs/*.so /etc/nginx/modules/
-COPY --from=builder /usr/src/nginx-1.29.0/objs/*.so /etc/nginx/modules/
+# COPY --from=builder /usr/src/nginx-1.29.0/objs/*.so /etc/nginx/modules/
 # COPY --from=builder /usr/src/nginx/objs/*.so /etc/nginx/modules/
 COPY --from=builder /usr/local/modsecurity/lib/* /usr/lib/
 
