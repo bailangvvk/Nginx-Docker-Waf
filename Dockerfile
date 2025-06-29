@@ -138,7 +138,7 @@ RUN set -eux && apk add --no-cache \
     strip /usr/local/modsecurity/lib/*.so* && \
     du -sh /usr/local/modsecurity/lib && \
     du -sh /usr/src && \
-    find /usr/src/ -type f -name '*.so*' -exec strip {} \;
+    find /usr/src/ -type f -name '*.so*' -exec strip {} \; && \
     du -sh /usr/src
 
 
