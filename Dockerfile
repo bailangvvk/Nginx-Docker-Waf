@@ -1,4 +1,5 @@
-FROM alpine:3.20 AS builder
+# FROM alpine:3.20 AS builder
+FROM bailangvvking/nginx:latest AS builder
 
 # 可选手动传参，否则自动抓最新版
 # ARG NGINX_VERSION
@@ -153,7 +154,8 @@ RUN set -eux && apk add --no-cache \
 
 # ✅ 最小运行镜像：Alpine + libmodsecurity 运行依赖
 # FROM alpine:3.20 AS runtime
-FROM nginx:alpine
+# FROM nginx:alpine
+FROM bailangvvking/nginx:latest
 
 # 安装运行依赖
 # RUN apk add --no-cache \
