@@ -78,6 +78,7 @@ COPY --from=builder /usr/local/modsecurity/lib/* /usr/lib/
 
 # 创建配置目录并下载必要文件
 RUN set -eux && mkdir -p /etc/nginx/modsec/plugins \
+    && CORERULESET_VERSION=$(curl -s https://api.github.com/repos/coreruleset/coreruleset/releases/latest | grep -oE '"tag_name": "[^"]+' | cut -d'"' -f4 | sed 's/v//') \
     && wget https://github.com/coreruleset/coreruleset/archive/v${CORERULESET_VERSION}.tar.gz \
     && tar -xzf v${CORERULESET_VERSION}.tar.gz --strip-components=1 -C /etc/nginx/modsec \
     && rm -f v${CORERULESET_VERSION}.tar.gz \
