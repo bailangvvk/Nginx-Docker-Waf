@@ -1,5 +1,5 @@
 FROM alpine:latest AS builder
-ARG NGINX_VERSION ZSTD_VERSION
+# ARG NGINX_VERSION ZSTD_VERSION
 
 RUN apk add --no-cache --virtual .build-deps \
     pcre-dev zlib-dev openssl-dev wget git build-base brotli-dev \
@@ -70,7 +70,7 @@ RUN set -eux && \
 
 
 FROM nginx:alpine
-ARG NGINX_VERSION CORERULESET_VERSION
+# ARG NGINX_VERSION CORERULESET_VERSION
 
 # 复制压缩模块和 ModSecurity
 COPY --from=builder /usr/src/nginx-modules/*.so /etc/nginx/modules/
